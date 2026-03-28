@@ -1,111 +1,115 @@
-# Quick Start Guide - Azure Pricing MCP Server
+# Quick Start Guide
 
 ## Prerequisites
 
-- Python 3.8 or higher
-- Claude Desktop app (for using the MCP server)
+- Python 3.8+
+- An MCP-compatible client (GitHub Copilot CLI, Claude Desktop, VS Code/Cursor, etc.)
 
-## Installation
+## Setup (3 steps)
 
-### Option 1: Automated Setup (Windows)
+### 1. Install Dependencies
+
 ```bash
-# Run the setup script
-setup.bat
-```
-
-### Option 2: Manual Setup
-```bash
-# Create virtual environment
-python -m venv .venv
-
-# Activate virtual environment
-# Windows:
-.venv\Scripts\activate
-# Linux/Mac:
-source .venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Testing the Setup
+### 2. Bootstrap the Service Catalog
 
-### Test 1: API Connectivity
 ```bash
-# Test basic API connectivity (minimal dependencies)
-python test_api.py
+python sync_catalog.py
 ```
 
-### Test 2: Full MCP Server
-```bash
-# Test complete MCP server functionality
-.venv\Scripts\python.exe test_server.py
+This creates `azure_services.db` from `service_catalog.json`. Run this once, and again whenever you update the catalog.
+
+### 3. Configure Your MCP Client
+
+Add the server to your client's MCP configuration:
+
+**GitHub Copilot CLI** — add to `mcp.json`:
+```json
+{
+  "servers": {
+    "azure-pricing": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["azure_pricing_server.py"],
+      "cwd": "C:\\path\\to\\azure-pricing-mcp"
+    }
+  }
+}
 ```
 
-## Claude Desktop Configuration
+**Claude Desktop** — add to `claude_desktop_config.json`:
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-1. Find your Claude Desktop config file:
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Linux**: `~/.config/Claude/claude_desktop_config.json`
-
-2. Add the MCP server configuration:
 ```json
 {
   "mcpServers": {
     "azure-pricing": {
       "command": "python",
       "args": ["-m", "azure_pricing_server"],
-      "cwd": "C:\\git\\mcp\\azure_pricing"
+      "cwd": "/path/to/azure-pricing-mcp"
     }
   }
 }
 ```
 
-3. Restart Claude Desktop
+**VS Code / Cursor** — add to `settings.json`:
+```json
+{
+  "mcp": {
+    "servers": {
+      "azure-pricing": {
+        "command": "python",
+        "args": ["-m", "azure_pricing_server"],
+        "cwd": "/path/to/azure-pricing-mcp"
+      }
+    }
+  }
+}
+```
 
-## Usage
+Restart your client after adding the configuration.
 
-Once configured, you can ask Claude questions like:
+## Verify It Works
 
-- "What's the price of a Standard_D2s_v3 VM in East US?"
-- "Compare Azure storage prices between regions"
-- "Estimate monthly costs for running a web application"
-- "What are the cheapest compute options available?"
+Ask your AI assistant any of these:
 
-## Available Tools
+- *"What Azure services are available for AI?"*
+- *"Show me SQL Managed Instance SKUs in East US 2"*
+- *"Estimate costs for a D4s_v3 VM running 8 hours a day"*
+- *"Compare Azure Kubernetes Service pricing across eastus and westeurope"*
+- *"What's the monthly cost of a Fabric F64 capacity?"*
 
-1. **azure_price_search** - Search prices with filters
-2. **azure_price_compare** - Compare prices across regions/SKUs  
-3. **azure_cost_estimate** - Estimate costs based on usage
+## Running Tests
+
+```bash
+python -m pytest test_catalog_sync.py -v
+```
+
+## Updating the Service Catalog
+
+To discover new Azure services or check coverage:
+
+```bash
+python sync_catalog.py --from-api --report
+```
+
+To add a service, edit `service_catalog.json` and re-run `python sync_catalog.py`. See [ADDING_SERVICES.md](ADDING_SERVICES.md) for the full workflow.
 
 ## Troubleshooting
 
-### Common Issues
-
-**"Import errors" when running:**
-- Make sure you're using the virtual environment
-- Run: `.venv\Scripts\python.exe` instead of just `python`
-
-**"No results found":**
-- Check service name spelling (case-sensitive)
-- Try broader search terms
-- Verify region names
-
-**"Server not responding in Claude":**
-- Check Claude Desktop config file syntax
-- Verify the file path in the config
-- Restart Claude Desktop after changes
-
-### Getting Help
-
-1. Check the logs when running the server
-2. Test with `test_api.py` first
-3. Review `USAGE_EXAMPLES.md` for query examples
-4. Ensure all dependencies are installed
+| Issue | Fix |
+|-------|-----|
+| "No module named 'mcp'" | Run `pip install -r requirements.txt` |
+| "Service catalog DB not found" | Run `python sync_catalog.py` |
+| Server not responding in client | Check path in MCP config, restart client |
+| No results for a service | Check spelling — service names are case-sensitive. Use `azure_sku_discovery` for fuzzy matching. |
 
 ## Next Steps
 
-- Review `USAGE_EXAMPLES.md` for detailed usage patterns
-- Customize the server for your specific needs
-- Integrate with your existing cost management workflows
+- [ADDING_SERVICES.md](ADDING_SERVICES.md) — How to add new services
+- [CAPABILITIES.md](CAPABILITIES.md) — Full tool reference
+- [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) — Detailed query examples
+- [COVERAGE_GAP_LOG.md](COVERAGE_GAP_LOG.md) — Known limitations

@@ -1,148 +1,281 @@
-# Azure Pricing MCP Server 💰
+# Azure Pricing MCP Server
 
-A Model Context Protocol (MCP) server that provides tools for querying Azure retail pricing information using the Azure Retail Prices API.
+A Model Context Protocol (MCP) server for querying, comparing, and estimating Azure cloud service pricing in real time. Integrates with AI assistants (GitHub Copilot, Claude, Cursor, etc.) to provide accurate, live pricing data from the Azure Retail Prices API.
 
-## 🚀 Quick Start
+> **Fork**: This is a fork of [charris-msft/azure-pricing-mcp](https://github.com/charris-msft/azure-pricing-mcp). This fork adds a data-driven service catalog, SQLite-backed alias resolution, SKU tier estimators, service discovery, AGENTS.md optimization, comprehensive test coverage, and 100% API service coverage.
 
-1. **Clone/Download** this repository
-2. **Run setup**: `setup.ps1` (Windows PowerShell) or `python setup.py` (Cross-platform)
-3. **Configure Claude Desktop** (see [QUICK_START.md](QUICK_START.md))
-4. **Ask Claude**: "What's the price of a Standard_D2s_v3 VM in East US?"
+---
 
-## ✨ Features
+## Quick Start
 
-- **🔍 Azure Price Search**: Search for Azure service prices with flexible filtering
-- **⚖️ Service Comparison**: Compare prices across different regions and SKUs
-- **💡 Cost Estimation**: Calculate estimated costs based on usage patterns
-- **💰 Savings Plan Information**: Get Azure savings plan pricing when available
-- **🌍 Multi-Currency**: Support for multiple currencies (USD, EUR, etc.)
-- **📊 Real-time Data**: Uses live Azure Retail Prices API
+### 1. Install Dependencies
 
-## 🛠️ Tools Available
-
-| Tool | Description | Example Use |
-|------|-------------|-------------|
-| `azure_price_search` | Search Azure retail prices with filters | Find VM prices in specific regions |
-| `azure_price_compare` | Compare prices across regions/SKUs | Compare storage costs across regions |
-| `azure_cost_estimate` | Estimate costs based on usage | Calculate monthly costs for 8hr/day usage |
-| `azure_discover_skus` | Discover available SKUs for a service | Find all VM types for a service |
-| `azure_sku_discovery` | Intelligent SKU discovery with fuzzy matching | "Find app service plans" or "web app pricing" |
-
-## 📋 Installation
-
-### Automated Setup (Recommended)
 ```bash
-# Windows PowerShell
-.\setup.ps1
-
-# Cross-platform (Python)
-python setup.py
-```
-
-### Manual Setup
-```bash
-# Create virtual environment
-python -m venv .venv
-
-# Activate virtual environment
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-## 🔧 Configuration
+Requirements: `mcp>=1.0.0`, `aiohttp>=3.9.0`, `pydantic>=2.0.0`, `requests>=2.31.0`. Python 3.8+. SQLite is built into Python (no additional install).
 
-Add to your Claude Desktop config file:
+### 2. Bootstrap the Service Catalog
 
+```bash
+python sync_catalog.py
+```
+
+This creates `azure_services.db` from `service_catalog.json` — the runtime lookup database with 418 service aliases covering 156 Azure services.
+
+### 3. Configure Your MCP Client
+
+Add to your MCP client configuration:
+
+**GitHub Copilot CLI** (`mcp.json` or settings):
+```json
+{
+  "servers": {
+    "azure-pricing": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["azure_pricing_server.py"],
+      "cwd": "C:\\path\\to\\azure-pricing-mcp"
+    }
+  }
+}
+```
+
+**Claude Desktop** (`claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "azure-pricing": {
       "command": "python",
       "args": ["-m", "azure_pricing_server"],
-      "cwd": "/path/to/azure_pricing"
+      "cwd": "/path/to/azure-pricing-mcp"
     }
   }
 }
 ```
 
-## 💬 Example Queries
-
-Once configured with Claude, you can ask:
-
-- **Basic Pricing**: "What's the price of Azure SQL Database?"
-- **Comparisons**: "Compare VM prices between East US and West Europe"
-- **Cost Estimation**: "Estimate costs for running a D4s_v3 VM 12 hours per day"
-- **Savings**: "What are the reserved instance savings for virtual machines?"
-- **GPU Pricing**: "Show me all GPU-enabled VMs with pricing"
-- **Service Discovery**: "Find all App Service plan pricing" or "What storage options are available?"
-- **SKU Discovery**: "Show me all web app hosting plans"
-
-## 🧪 Testing
-
-Test setup and connectivity:
-```bash
-# Windows PowerShell
-.\test_setup.ps1
-
-# Cross-platform test
-python -m azure_pricing_server --test
+**VS Code / Cursor** (`settings.json`):
+```json
+{
+  "mcp": {
+    "servers": {
+      "azure-pricing": {
+        "command": "python",
+        "args": ["-m", "azure_pricing_server"],
+        "cwd": "/path/to/azure-pricing-mcp"
+      }
+    }
+  }
+}
 ```
 
-## 📚 Documentation
+### 4. Start Querying
 
-- **[QUICK_START.md](QUICK_START.md)** - Step-by-step setup guide
-- **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Detailed usage examples and API responses
-- **[config_examples.json](config_examples.json)** - Example configurations for Claude Desktop and VS Code
-
-## 🔌 API Integration
-
-This server uses the official Azure Retail Prices API:
-- **Endpoint**: `https://prices.azure.com/api/retail/prices`
-- **Version**: `2023-01-01-preview` (supports savings plans)
-- **Authentication**: None required (public API)
-- **Rate Limits**: Generous limits for retail pricing data
-
-## 🌟 Key Features
-
-### Smart Filtering
-- Filter by service name, family, region, SKU
-- Support for partial matches and contains operations
-- Case-sensitive filtering for precise results
-
-### Cost Optimization
-- Automatic savings plan detection
-- Reserved instance pricing comparisons
-- Multi-region cost analysis
-- Intelligent SKU discovery for finding the best pricing options
-
-### Developer Friendly
-- Comprehensive error handling
-- Detailed logging for troubleshooting
-- Flexible parameter support
-- Cross-platform setup scripts (PowerShell and Python)
-
-## 🤝 Contributing
-
-This project follows the Spec-Driven Development (SDD) methodology. Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
-
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-## 🙋‍♂️ Support
-
-- Check [QUICK_START.md](QUICK_START.md) for setup issues
-- Review [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) for query patterns
-- Open an issue for bugs or feature requests
+Ask your AI assistant:
+- *"What services are available for AI workloads?"*
+- *"What's the price of a D4s_v3 VM in East US?"*
+- *"Compare SQL Managed Instance pricing across regions"*
+- *"Estimate monthly costs for a Fabric F64 capacity"*
+- *"Show me all GPU compute options in Azure ML"*
 
 ---
 
-*Built with the Model Context Protocol (MCP) for seamless integration with Claude and other AI assistants.*
+## Architecture
+
+```
+service_catalog.json  ──►  sync_catalog.py  ──►  azure_services.db  ──►  azure_pricing_server.py
+(git-editable)              (CLI sync)            (SQLite runtime)        (MCP stdio server)
+                                                                               │
+                                                                         Azure Retail Prices API
+                                                                         prices.azure.com (public)
+```
+
+- **`service_catalog.json`** — Source of truth. 418 aliases, 8 deprecated services, 61 SKU tiers. Edit this file to add services — no code changes needed.
+- **`sync_catalog.py`** — CLI utility that syncs JSON → SQLite, discovers new services from the API, and reports coverage gaps.
+- **`azure_services.db`** — Runtime SQLite database (gitignored, regenerated by sync). The server reads from this at startup.
+- **`azure_pricing_server.py`** — MCP stdio server. Launched by the MCP client on demand.
+
+---
+
+## MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `azure_service_discovery` | **Discover services** by scenario ("ai", "database", "networking") or browse all categories |
+| `azure_price_search` | Search prices with filters. Auto-summarizes by SKU when no specific SKU is given |
+| `azure_price_compare` | Compare prices across regions or SKUs side-by-side |
+| `azure_cost_estimate` | Project hourly/daily/monthly/yearly costs with savings plan analysis |
+| `azure_discover_skus` | List all SKUs for a service (exact name) |
+| `azure_sku_discovery` | Fuzzy SKU discovery — use natural language ("web app", "k8s", "serverless") |
+| `get_customer_discount` | Get/configure customer discount percentage (default: 10%) |
+
+### Example Queries
+
+| What You Want | Tool to Use |
+|---------------|------------|
+| "What Azure services exist for AI?" | `azure_service_discovery(scenario="ai")` |
+| "Show me database options" | `azure_service_discovery(scenario="database")` |
+| "What SKUs does SQL MI have?" | `azure_price_search(service_name="SQL Managed Instance")` |
+| "Price a D4s_v3 VM in East US" | `azure_price_search(service_name="Virtual Machines", sku_name="D4s v3", region="eastus")` |
+| "Estimate 8hr/day VM costs" | `azure_cost_estimate(service_name="Virtual Machines", sku_name="D4s v3", region="eastus", hours_per_month=176)` |
+| "Compare AKS across regions" | `azure_price_compare(service_name="Azure Kubernetes Service", regions=["eastus","westeurope"])` |
+| "Fabric F64 capacity pricing" | Uses SKU tier data: F64 = 64 CU × $0.18/CU/hr = $8,410/mo |
+
+---
+
+## Adding New Services (Data-Driven — No Code Changes)
+
+The service catalog is fully data-driven. To add a new Azure service:
+
+1. **Find the exact API service name:**
+   ```bash
+   python sync_catalog.py --from-api --report
+   ```
+
+2. **Edit `service_catalog.json`** — add alias entries:
+   ```json
+   {"alias": "your common name", "service_name": "Exact API ServiceName", "category": "Category"}
+   ```
+   - Aliases must be **lowercase**
+   - `service_name` must match the API's `serviceName` exactly (case-sensitive)
+   - Include full name, abbreviation, and colloquial terms
+
+3. **Sync to SQLite:**
+   ```bash
+   python sync_catalog.py
+   ```
+
+4. **Verify:**
+   ```bash
+   python -m pytest test_catalog_sync.py -v
+   ```
+
+For full details, see [ADDING_SERVICES.md](ADDING_SERVICES.md).
+
+### Adding SKU Tiers (e.g., Fabric F-SKUs, Cosmos RU/s)
+
+Add to the `sku_tiers` section in `service_catalog.json`:
+
+```json
+{
+  "service_name": "Microsoft Fabric",
+  "unit_name": "Capacity Units (CU)",
+  "source": "https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/",
+  "source_date": "2026-03-20",
+  "tiers": [
+    {"name": "F64", "units": 64, "description": "Production - 64 CU"}
+  ]
+}
+```
+
+### Adding Deprecated Services
+
+Add to `deprecated_services` in `service_catalog.json`:
+
+```json
+{
+  "alias": "old name",
+  "service_name": "Replacement API Name",
+  "status": "retired|retiring|deprecated|rebranded",
+  "retirement_date": "YYYY-MM-DD",
+  "replacement": "Human-readable replacement",
+  "message": "User-facing migration guidance."
+}
+```
+
+---
+
+## Catalog Management
+
+| Command | Purpose |
+|---------|---------|
+| `python sync_catalog.py` | Sync JSON → SQLite |
+| `python sync_catalog.py --from-api --report` | Discover new services from Azure API + gap report |
+| `python sync_catalog.py --dry-run` | Preview changes without writing |
+| `python sync_catalog.py --report` | Print coverage report |
+| `python -m pytest test_catalog_sync.py -v` | Run 97 validation tests |
+
+### Current Coverage
+
+- **418 aliases** mapping to **156 Azure API services** (100% coverage)
+- **61 SKU tiers** across 6 services (Fabric, Cosmos DB, AI Search, OpenAI, Azure ML, AI Services)
+- **8 deprecated/retired** services with migration guidance
+- **Data provenance**: every entry tracks source URL and date
+
+---
+
+## Testing
+
+```bash
+python -m pytest test_catalog_sync.py -v
+```
+
+97 tests covering:
+- JSON schema and data integrity (11 tests)
+- Sync utility: idempotency, prune, update, dry-run (8 tests)
+- SQLite schema validation (7 tests)
+- Server loading and graceful fallback (5 tests)
+- Alias lookup correctness — 40 parametrized lookups across core, AI, networking, gap services
+- SKU tier sync and pricing computation (10 tests)
+- Deprecated service lookups (5 tests)
+- Provenance propagation (2 tests)
+- Full coverage validation (2 tests)
+
+---
+
+## API Details
+
+| Property | Value |
+|----------|-------|
+| **Endpoint** | `https://prices.azure.com/api/retail/prices` |
+| **API Version** | `2023-01-01-preview` (latest as of 2026, includes savings plans) |
+| **Authentication** | None required — public API |
+| **Rate Limiting** | Automatic retry with exponential backoff (5s/10s/15s) |
+| **Max Results** | 1,000 per request |
+
+---
+
+## Project Files
+
+| File | Purpose | Edit? |
+|------|---------|-------|
+| `service_catalog.json` | Source of truth — aliases, deprecated, SKU tiers | **Yes** |
+| `sync_catalog.py` | CLI sync utility (JSON → SQLite) | Rarely |
+| `azure_pricing_server.py` | MCP stdio server | Rarely |
+| `azure_services.db` | Runtime SQLite (gitignored, regenerated) | **No** |
+| `test_catalog_sync.py` | 97 pytest tests | When adding test cases |
+| `AGENTS.md` | Passive context for AI agents (per Vercel research) | When tools/aliases change |
+| `azure-pricing-mcp.skill` | Copilot CLI skill package | Regenerated from skill dir |
+| `mcp.json` | MCP client configuration | Adjust paths for your env |
+| `ADDING_SERVICES.md` | Workflow guide for adding services | When process changes |
+| `CAPABILITIES.md` | Full capabilities reference | When tools change |
+| `COVERAGE_GAP_LOG.md` | Limitations and gap analysis | When coverage changes |
+| `CHANGELOG.md` | Version history | Each release |
+
+---
+
+## Limitations
+
+| Limitation | Detail |
+|------------|--------|
+| **Single-page results** | Max 1,000 items per query. `NextPageLink` detected but not auto-followed. |
+| **Static discount** | Default 10% discount. No EA/contract integration yet. |
+| **No local caching** | Every tool call hits the live API. |
+| **Case-sensitive filters** | API `serviceName` filters require exact case. The alias system handles this. |
+| **Token-based pricing** | OpenAI/Foundry model costs depend on token volume — estimates require usage assumptions. |
+
+See [COVERAGE_GAP_LOG.md](COVERAGE_GAP_LOG.md) for the full limitations log.
+
+---
+
+## Credits
+
+- **Original Author**: [charris-msft](https://github.com/charris-msft/azure-pricing-mcp) — initial MCP server implementation
+- **Fork Maintainer**: [dc995](https://github.com/dc995) — data-driven catalog, SQLite externalization, SKU tiers, service discovery, AGENTS.md optimization, 100% service coverage, test suite
+- **API**: [Azure Retail Prices REST API](https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices)
+- **Protocol**: [Model Context Protocol](https://modelcontextprotocol.io/)
+
+---
+
+*For contributions, open an issue or pull request on this repo.*

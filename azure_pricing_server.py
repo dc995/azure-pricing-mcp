@@ -8,6 +8,8 @@ A Model Context Protocol server that provides tools for querying Azure retail pr
 import asyncio
 import json
 import logging
+import sqlite3
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlencode, quote
 
@@ -38,8 +40,120 @@ MAX_RESULTS_PER_REQUEST = 1000
 class AzurePricingServer:
     """Azure Pricing MCP Server implementation."""
     
+    DB_PATH = Path(__file__).resolve().parent / "azure_services.db"
+    
     def __init__(self):
         self.session: Optional[aiohttp.ClientSession] = None
+        self._service_mappings: Optional[Dict[str, str]] = None
+        self._deprecated_service_mappings: Optional[Dict[str, dict]] = None
+        self._sku_tiers: Optional[Dict[str, dict]] = None
+    
+    def _load_catalog(self):
+        """Load service mappings, deprecated entries, and SKU tiers from SQLite."""
+        if not self.DB_PATH.exists():
+            logger.warning("Service catalog DB not found at %s — using empty mappings. Run sync_catalog.py to populate.", self.DB_PATH)
+            self._service_mappings = {}
+            self._deprecated_service_mappings = {}
+            self._sku_tiers = {}
+            return
+        
+        conn = sqlite3.connect(str(self.DB_PATH))
+        conn.row_factory = sqlite3.Row
+        try:
+            self._service_mappings = {
+                row["alias"]: row["service_name"]
+                for row in conn.execute("SELECT alias, service_name FROM service_aliases")
+            }
+            self._deprecated_service_mappings = {
+                row["alias"]: {
+                    "service": row["service_name"],
+                    "status": row["status"],
+                    "retirement_date": row["retirement_date"],
+                    "replacement": row["replacement"],
+                    "message": row["message"],
+                }
+                for row in conn.execute("SELECT alias, service_name, status, retirement_date, replacement, message FROM deprecated_services")
+            }
+            # Load SKU tiers grouped by service
+            self._sku_tiers = {}
+            try:
+                for row in conn.execute(
+                    "SELECT service_name, tier_name, unit_count, unit_name, description, api_sku_name, api_unit, source, source_date FROM sku_tiers"
+                ):
+                    svc = row["service_name"]
+                    if svc not in self._sku_tiers:
+                        self._sku_tiers[svc] = {
+                            "unit_name": row["unit_name"],
+                            "api_sku_name": row["api_sku_name"],
+                            "api_unit": row["api_unit"],
+                            "source": row["source"],
+                            "source_date": row["source_date"],
+                            "tiers": {},
+                        }
+                    self._sku_tiers[svc]["tiers"][row["tier_name"]] = {
+                        "unit_count": row["unit_count"],
+                        "description": row["description"],
+                    }
+            except sqlite3.OperationalError:
+                self._sku_tiers = {}
+            logger.info("Loaded %d service aliases, %d deprecated, %d SKU tier services from catalog DB",
+                        len(self._service_mappings), len(self._deprecated_service_mappings), len(self._sku_tiers))
+        finally:
+            conn.close()
+    
+    @property
+    def service_mappings(self) -> Dict[str, str]:
+        if self._service_mappings is None:
+            self._load_catalog()
+        return self._service_mappings
+    
+    @property
+    def deprecated_service_mappings(self) -> Dict[str, dict]:
+        if self._deprecated_service_mappings is None:
+            self._load_catalog()
+        return self._deprecated_service_mappings
+    
+    @property
+    def sku_tiers(self) -> Dict[str, dict]:
+        if self._sku_tiers is None:
+            self._load_catalog()
+        return self._sku_tiers
+    
+    def get_tier_pricing(self, service_name: str, tier_name: str, base_unit_price: float) -> Optional[dict]:
+        """Compute pricing for a named SKU tier given the base per-unit price."""
+        svc_tiers = self.sku_tiers.get(service_name)
+        if not svc_tiers:
+            return None
+        tier = svc_tiers["tiers"].get(tier_name)
+        if not tier:
+            return None
+        unit_count = tier["unit_count"]
+        hourly = base_unit_price * unit_count
+        return {
+            "tier_name": tier_name,
+            "unit_count": unit_count,
+            "unit_name": svc_tiers["unit_name"],
+            "description": tier["description"],
+            "base_unit_price": base_unit_price,
+            "hourly_cost": round(hourly, 6),
+            "daily_cost": round(hourly * 24, 2),
+            "monthly_cost": round(hourly * 730, 2),
+            "annual_cost": round(hourly * 730 * 12, 2),
+            "source": svc_tiers.get("source", ""),
+            "source_date": svc_tiers.get("source_date", ""),
+        }
+    
+    def list_tier_pricing(self, service_name: str, base_unit_price: float) -> Optional[list]:
+        """Compute pricing for all tiers of a service."""
+        svc_tiers = self.sku_tiers.get(service_name)
+        if not svc_tiers:
+            return None
+        results = []
+        for tier_name in sorted(svc_tiers["tiers"].keys(), key=lambda t: svc_tiers["tiers"][t]["unit_count"]):
+            r = self.get_tier_pricing(service_name, tier_name, base_unit_price)
+            if r:
+                results.append(r)
+        return results
         
     async def __aenter__(self):
         """Async context manager entry."""
@@ -614,69 +728,49 @@ class AzurePricingServer:
     ) -> Dict[str, Any]:
         """Find services with similar names or suggest alternatives."""
         
-        # Common service name mappings
-        service_mappings = {
-            # User input -> Correct Azure service name
-            "app service": "Azure App Service",
-            "web app": "Azure App Service",
-            "web apps": "Azure App Service",
-            "app services": "Azure App Service",
-            "websites": "Azure App Service",
-            "web service": "Azure App Service",
-            
-            "virtual machine": "Virtual Machines",
-            "vm": "Virtual Machines",
-            "vms": "Virtual Machines",
-            "compute": "Virtual Machines",
-            
-            "storage": "Storage",
-            "blob": "Storage",
-            "blob storage": "Storage",
-            "file storage": "Storage",
-            "disk": "Storage",
-            
-            "sql": "Azure SQL Database",
-            "sql database": "Azure SQL Database",
-            "database": "Azure SQL Database",
-            "sql server": "Azure SQL Database",
-            
-            "cosmos": "Azure Cosmos DB",
-            "cosmosdb": "Azure Cosmos DB",
-            "cosmos db": "Azure Cosmos DB",
-            "document db": "Azure Cosmos DB",
-            
-            "kubernetes": "Azure Kubernetes Service",
-            "aks": "Azure Kubernetes Service",
-            "k8s": "Azure Kubernetes Service",
-            "container service": "Azure Kubernetes Service",
-            
-            "functions": "Azure Functions",
-            "function app": "Azure Functions",
-            "serverless": "Azure Functions",
-            
-            "redis": "Azure Cache for Redis",
-            "cache": "Azure Cache for Redis",
-            
-            "ai": "Azure AI services",
-            "cognitive": "Azure AI services",
-            "cognitive services": "Azure AI services",
-            "openai": "Azure OpenAI",
-            
-            "networking": "Virtual Network",
-            "network": "Virtual Network",
-            "vnet": "Virtual Network",
-            
-            "load balancer": "Load Balancer",
-            "lb": "Load Balancer",
-            
-            "application gateway": "Application Gateway",
-            "app gateway": "Application Gateway",
-        }
+        # Service mappings loaded from SQLite catalog
+        service_mappings = self.service_mappings
+
+        # Deprecated / retiring services loaded from SQLite catalog
+        deprecated_service_mappings = self.deprecated_service_mappings
         
         suggestions = []
         search_term = service_name.lower() if service_name else ""
         
-        # Try exact mapping first
+        # Check deprecated/retired services first and warn
+        if search_term in deprecated_service_mappings:
+            dep_info = deprecated_service_mappings[search_term]
+            correct_name = dep_info["service"]
+            
+            result = await self.search_azure_prices(
+                service_name=correct_name,
+                currency_code=currency_code,
+                limit=limit
+            )
+            
+            # Attach deprecation warning to result
+            status_emoji = {
+                "retired": "🚫",
+                "retiring": "⚠️",
+                "deprecated": "⚠️",
+                "rebranded": "🔄"
+            }
+            emoji = status_emoji.get(dep_info["status"], "⚠️")
+            
+            result["deprecation_warning"] = {
+                "status": dep_info["status"],
+                "message": f"{emoji} {dep_info['message']}",
+                "replacement": dep_info["replacement"],
+                "retirement_date": dep_info["retirement_date"]
+            }
+            
+            if result.get("items"):
+                result["suggestion_used"] = correct_name
+                result["original_search"] = service_name
+                result["match_type"] = "deprecated_mapping"
+                return result
+        
+        # Try exact mapping from active services
         if search_term in service_mappings:
             correct_name = service_mappings[search_term]
             result = await self.search_azure_prices(
@@ -828,7 +922,8 @@ class AzurePricingServer:
                 "skus": skus,
                 "total_skus": len(skus),
                 "currency": currency_code,
-                "match_type": result.get("match_type", "exact")
+                "match_type": result.get("match_type", "exact"),
+                "deprecation_warning": result.get("deprecation_warning")
             }
         
         # If no exact matches, return suggestions
@@ -841,6 +936,206 @@ class AzurePricingServer:
             "suggestions": result.get("suggestions", []),
             "match_type": "no_match"
         }
+    
+    async def discover_services(
+        self,
+        scenario: Optional[str] = None,
+        category: Optional[str] = None,
+        service_family: Optional[str] = None,
+        region: Optional[str] = None,
+        include_pricing: bool = True,
+        limit: int = 20
+    ) -> Dict[str, Any]:
+        """
+        Discover Azure services by scenario, category, or service family.
+        Returns grouped services with sample pricing and tier info.
+        """
+        conn = sqlite3.connect(str(self.DB_PATH))
+        conn.row_factory = sqlite3.Row
+        
+        try:
+            # Build query based on inputs
+            services = {}
+            
+            if category:
+                # Direct category lookup
+                rows = conn.execute(
+                    "SELECT DISTINCT service_name, category FROM service_aliases WHERE LOWER(category) = LOWER(?)",
+                    (category,)
+                ).fetchall()
+                for r in rows:
+                    services[r["service_name"]] = r["category"]
+            
+            elif scenario:
+                # Scenario-based: map common scenarios to categories + keywords
+                scenario_map = {
+                    "ai": ["AI & ML", "Data"],
+                    "artificial intelligence": ["AI & ML", "Data"],
+                    "machine learning": ["AI & ML"],
+                    "data": ["Analytics", "Data", "Databases"],
+                    "analytics": ["Analytics"],
+                    "web": ["Compute", "Networking", "Containers"],
+                    "web application": ["Compute", "Networking", "Containers"],
+                    "networking": ["Networking"],
+                    "security": ["Security"],
+                    "iot": ["Internet of Things"],
+                    "internet of things": ["Internet of Things"],
+                    "devops": ["Developer Tools", "Containers"],
+                    "developer": ["Developer Tools"],
+                    "integration": ["Integration", "Communication"],
+                    "messaging": ["Integration", "Communication"],
+                    "containers": ["Containers", "Compute"],
+                    "serverless": ["Compute", "Integration"],
+                    "storage": ["Storage"],
+                    "database": ["Databases"],
+                    "databases": ["Databases"],
+                    "monitoring": ["Management"],
+                    "management": ["Management"],
+                    "governance": ["Management", "Security"],
+                    "communication": ["Communication"],
+                    "mixed reality": ["Mixed Reality"],
+                    "gaming": ["Gaming"],
+                    "power platform": ["Power Platform"],
+                    "telecom": ["Telecommunications"],
+                    "hybrid": ["Azure Stack", "Azure Arc"],
+                }
+                
+                scenario_lower = scenario.lower().strip()
+                matched_categories = None
+                
+                # Exact match
+                if scenario_lower in scenario_map:
+                    matched_categories = scenario_map[scenario_lower]
+                else:
+                    # Partial match
+                    for key, cats in scenario_map.items():
+                        if scenario_lower in key or key in scenario_lower:
+                            matched_categories = cats
+                            break
+                
+                if matched_categories:
+                    placeholders = ",".join(["?"] * len(matched_categories))
+                    rows = conn.execute(
+                        f"SELECT DISTINCT service_name, category FROM service_aliases WHERE LOWER(category) IN ({placeholders})",
+                        [c.lower() for c in matched_categories]
+                    ).fetchall()
+                    for r in rows:
+                        services[r["service_name"]] = r["category"]
+                else:
+                    # Fallback: search aliases and service names for the term
+                    rows = conn.execute(
+                        "SELECT DISTINCT service_name, category FROM service_aliases WHERE alias LIKE ? OR service_name LIKE ?",
+                        (f"%{scenario_lower}%", f"%{scenario_lower}%")
+                    ).fetchall()
+                    for r in rows:
+                        services[r["service_name"]] = r["category"]
+            
+            elif service_family:
+                # Use azure_services table if populated, otherwise alias categories
+                rows = conn.execute(
+                    "SELECT DISTINCT service_name, category FROM service_aliases WHERE LOWER(category) LIKE ?",
+                    (f"%{service_family.lower()}%",)
+                ).fetchall()
+                for r in rows:
+                    services[r["service_name"]] = r["category"]
+            else:
+                # No filter — return all categories as a directory
+                rows = conn.execute(
+                    "SELECT category, COUNT(DISTINCT service_name) as svc_count, GROUP_CONCAT(DISTINCT service_name) as svcs FROM service_aliases GROUP BY category ORDER BY svc_count DESC"
+                ).fetchall()
+                categories = []
+                for r in rows:
+                    svcs = r["svcs"].split(",") if r["svcs"] else []
+                    categories.append({
+                        "category": r["category"],
+                        "service_count": r["svc_count"],
+                        "services": svcs[:5],
+                        "has_more": len(svcs) > 5
+                    })
+                return {
+                    "type": "category_directory",
+                    "total_categories": len(categories),
+                    "categories": categories,
+                    "hint": "Use a specific category or scenario to explore services within it."
+                }
+            
+            # Build result with optional pricing
+            result_services = []
+            for svc_name, cat in sorted(services.items()):
+                entry = {
+                    "service_name": svc_name,
+                    "category": cat,
+                    "aliases": [],
+                    "has_tiers": svc_name in self.sku_tiers,
+                }
+                
+                # Get aliases for this service
+                alias_rows = conn.execute(
+                    "SELECT alias FROM service_aliases WHERE service_name = ? ORDER BY LENGTH(alias) LIMIT 5",
+                    (svc_name,)
+                ).fetchall()
+                entry["aliases"] = [r["alias"] for r in alias_rows]
+                
+                # Get tier summary if available
+                if entry["has_tiers"]:
+                    tier_info = self.sku_tiers[svc_name]
+                    tiers = tier_info["tiers"]
+                    entry["tier_summary"] = {
+                        "unit_name": tier_info["unit_name"],
+                        "tier_count": len(tiers),
+                        "tiers": list(tiers.keys()),
+                        "source": tier_info.get("source", ""),
+                        "source_date": tier_info.get("source_date", ""),
+                    }
+                
+                # Get sample pricing from API
+                if include_pricing:
+                    try:
+                        price_result = await self.search_azure_prices(
+                            service_name=svc_name,
+                            region=region,
+                            price_type="Consumption",
+                            limit=3
+                        )
+                        if price_result.get("items"):
+                            samples = []
+                            for it in price_result["items"][:2]:
+                                p = it.get("retailPrice", 0)
+                                if p > 0:
+                                    samples.append({
+                                        "sku": it.get("skuName", ""),
+                                        "price": p,
+                                        "unit": it.get("unitOfMeasure", ""),
+                                    })
+                            entry["sample_pricing"] = samples
+                    except Exception:
+                        pass
+                
+                result_services.append(entry)
+                if len(result_services) >= limit:
+                    break
+            
+            # Check for deprecated services in the results
+            deprecated = []
+            for alias, dep_info in self.deprecated_service_mappings.items():
+                if dep_info.get("status") in ("retiring", "deprecated"):
+                    if dep_info["service"] in services:
+                        deprecated.append({
+                            "alias": alias,
+                            "status": dep_info["status"],
+                            "replacement": dep_info.get("replacement", ""),
+                            "retirement_date": dep_info.get("retirement_date"),
+                        })
+            
+            return {
+                "type": "service_discovery",
+                "query": scenario or category or service_family or "all",
+                "total_services": len(result_services),
+                "services": result_services,
+                "deprecated_warnings": deprecated if deprecated else None,
+            }
+        finally:
+            conn.close()
 
 # Create the MCP server
 server = Server("azure-pricing")
@@ -1036,6 +1331,41 @@ async def handle_list_tools() -> List[Tool]:
                     }
                 }
             }
+        ),
+        Tool(
+            name="azure_service_discovery",
+            description="Discover Azure services by scenario, category, or service family. Use when the user asks 'what services exist for AI?', 'show me database options', 'what networking services are available?', or any exploration query. Returns services grouped by category with aliases, tier info, and sample pricing. Call with no parameters to see the full service directory.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "scenario": {
+                        "type": "string",
+                        "description": "Scenario or use case to explore (e.g., 'ai', 'data', 'web application', 'iot', 'security', 'serverless', 'containers', 'devops', 'messaging', 'hybrid')"
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Specific service category (e.g., 'AI & ML', 'Databases', 'Networking', 'Compute', 'Storage', 'Integration')"
+                    },
+                    "service_family": {
+                        "type": "string",
+                        "description": "Azure service family from the Retail Prices API (e.g., 'Compute', 'Databases', 'Analytics')"
+                    },
+                    "region": {
+                        "type": "string",
+                        "description": "Azure region for sample pricing (e.g., 'eastus', 'westeurope')"
+                    },
+                    "include_pricing": {
+                        "type": "boolean",
+                        "description": "Include sample pricing for each service (default: true, set false for faster results)",
+                        "default": true
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of services to return (default: 20)",
+                        "default": 20
+                    }
+                }
+            }
         )
     ]
 
@@ -1055,6 +1385,43 @@ async def handle_call_tool(name: str, arguments: dict) -> list:
                     arguments["discount_percentage"] = discount_percentage
                 
                 result = await pricing_server.search_azure_prices(**arguments)
+                
+                # Auto-summarize by SKU when no sku_name filter and many results
+                sku_filter = arguments.get("sku_name")
+                if not sku_filter and result.get("items") and len(result["items"]) > 10:
+                    # Group by SKU for a useful summary
+                    sku_summary = {}
+                    for item in result["items"]:
+                        sku = item.get("skuName", "Unknown")
+                        product = item.get("productName", "Unknown")
+                        price = item.get("retailPrice", 0)
+                        unit = item.get("unitOfMeasure", "Unknown")
+                        key = (product, sku)
+                        if key not in sku_summary or (price > 0 and price < sku_summary[key]["price"]):
+                            sku_summary[key] = {"product": product, "sku": sku, "price": price, "unit": unit}
+                    
+                    svc_name = arguments.get("service_name", "service")
+                    region = arguments.get("region", "all regions")
+                    response_text = f"Found {len(sku_summary)} SKUs for {svc_name} in {region}:\n\n"
+                    response_text += "**Available SKUs (lowest price shown):**\n"
+                    for (product, sku), info in sorted(sku_summary.items()):
+                        response_text += f"  • **{sku}** ({product}) — ${info['price']:.4f} per {info['unit']}\n"
+                    
+                    # Add tier info if available
+                    svc = arguments.get("service_name", "")
+                    tier_data = pricing_server.sku_tiers.get(svc)
+                    if tier_data:
+                        response_text += f"\n📊 **Named SKU Tiers** ({tier_data['unit_name']}):\n"
+                        response_text += f"   Source: {tier_data.get('source', 'N/A')} ({tier_data.get('source_date', 'N/A')})\n"
+                        for tname, tinfo in sorted(tier_data["tiers"].items(), key=lambda t: t[1]["unit_count"]):
+                            response_text += f"  • **{tname}** — {tinfo['unit_count']:.0f} {tier_data['unit_name']} — {tinfo['description']}\n"
+                    
+                    response_text += f"\n💡 Use a specific SKU name above with `azure_price_search` or `azure_cost_estimate` for detailed pricing."
+                    
+                    if "discount_applied" in result:
+                        response_text += f"\n💰 {result['discount_applied']['percentage']}% customer discount would apply."
+                    
+                    return [TextContent(type="text", text=response_text)]
                 
                 # Format the response
                 if result["items"]:
@@ -1086,6 +1453,12 @@ async def handle_call_tool(name: str, arguments: dict) -> list:
                     
                     if result["count"] > 0:
                         response_text = f"Found {result['count']} Azure pricing results:\n\n"
+                        
+                        # Add deprecation warning if present
+                        if "deprecation_warning" in result and result["deprecation_warning"]:
+                            dw = result["deprecation_warning"]
+                            response_text += f"{dw['message']}\n"
+                            response_text += f"   ➡️ Replacement: {dw['replacement']}\n\n"
                         
                         # Add discount information if applied
                         if "discount_applied" in result:
@@ -1295,6 +1668,12 @@ Original Pricing (before discount):
                     
                     response_text += f"\n\nFound {total_skus} SKUs for {service_name}:\n\n"
                     
+                    # Add deprecation warning if present
+                    if result.get("deprecation_warning"):
+                        dw = result["deprecation_warning"]
+                        response_text += f"{dw['message']}\n"
+                        response_text += f"   ➡️ Replacement: {dw['replacement']}\n\n"
+                    
                     # Group SKUs by product
                     products = {}
                     for sku_name, sku_data in skus.items():
@@ -1379,6 +1758,65 @@ Applicable Services: {result['applicable_services']}
 
 {result['note']}
 """
+                
+                return [
+                    TextContent(
+                        type="text",
+                        text=response_text
+                    )
+                ]
+            
+            elif name == "azure_service_discovery":
+                result = await pricing_server.discover_services(**arguments)
+                
+                if result.get("type") == "category_directory":
+                    response_text = "📂 **Azure Service Directory**\n\n"
+                    for cat in result["categories"]:
+                        svcs = ", ".join(cat["services"])
+                        more = f" (+more)" if cat["has_more"] else ""
+                        response_text += f"  **{cat['category']}** ({cat['service_count']} services): {svcs}{more}\n"
+                    response_text += f"\n💡 Use `scenario` or `category` parameter to explore a specific area."
+                else:
+                    query = result.get("query", "")
+                    total = result.get("total_services", 0)
+                    response_text = f"🔍 **Service Discovery: \"{query}\"** — {total} services found\n\n"
+                    
+                    # Group by category
+                    by_cat = {}
+                    for svc in result.get("services", []):
+                        cat = svc.get("category", "Other")
+                        by_cat.setdefault(cat, []).append(svc)
+                    
+                    for cat, svcs in sorted(by_cat.items()):
+                        response_text += f"**[{cat}]**\n"
+                        for svc in svcs:
+                            aliases = ", ".join(svc.get("aliases", [])[:3])
+                            response_text += f"  • **{svc['service_name']}** (aliases: {aliases})\n"
+                            
+                            # Show sample pricing
+                            for sp in svc.get("sample_pricing", []):
+                                response_text += f"    💲 {sp['sku']}: ${sp['price']:.4f}/{sp['unit']}\n"
+                            
+                            # Show tier info
+                            if svc.get("tier_summary"):
+                                ts = svc["tier_summary"]
+                                tiers_str = ", ".join(ts["tiers"][:5])
+                                if len(ts["tiers"]) > 5:
+                                    tiers_str += f" (+{len(ts['tiers'])-5} more)"
+                                response_text += f"    📊 Tiers: {tiers_str} ({ts['unit_name']})\n"
+                                response_text += f"    📅 Source: {ts['source']} ({ts['source_date']})\n"
+                        response_text += "\n"
+                    
+                    # Show deprecation warnings
+                    if result.get("deprecated_warnings"):
+                        response_text += "⚠️ **Deprecation Warnings:**\n"
+                        for dw in result["deprecated_warnings"]:
+                            response_text += f"  • {dw['alias']} [{dw['status']}] → {dw['replacement']}"
+                            if dw.get("retirement_date"):
+                                response_text += f" (by {dw['retirement_date']})"
+                            response_text += "\n"
+                    
+                    response_text += "\n💡 Use `azure_price_search` or `azure_cost_estimate` with a specific service name for detailed pricing."
                 
                 return [
                     TextContent(

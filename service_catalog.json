@@ -1,0 +1,785 @@
+{
+  "_metadata": {
+    "description": "Azure service catalog for the Azure Pricing MCP Server. Edit this file to add/update service aliases, deprecated services, and SKU tier mappings. Run sync_catalog.py to apply changes.",
+    "schema_version": "1.1",
+    "last_updated": "2026-03-20",
+    "default_source": "https://prices.azure.com/api/retail/prices?api-version=2023-01-01-preview",
+    "default_source_date": "2026-03-20"
+  },
+  "service_aliases": [
+    {"alias": "ai", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "ai services", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "cognitive", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "cognitive services", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "azure ai", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "openai", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "azure openai", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "gpt", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "gpt-4", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "gpt-4o", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "chatgpt", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "dall-e", "service_name": "Foundry Models", "category": "AI & ML"},
+    {"alias": "whisper", "service_name": "Foundry Models", "category": "AI & ML"},
+
+    {"alias": "ai foundry", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "azure ai foundry", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "ai studio", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "azure ai studio", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "machine learning", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "azure machine learning", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "aml", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "ml", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+    {"alias": "mlops", "service_name": "Azure Machine Learning", "category": "AI & ML"},
+
+    {"alias": "ai search", "service_name": "Azure Cognitive Search", "category": "AI & ML"},
+    {"alias": "azure ai search", "service_name": "Azure Cognitive Search", "category": "AI & ML"},
+    {"alias": "cognitive search", "service_name": "Azure Cognitive Search", "category": "AI & ML"},
+    {"alias": "search service", "service_name": "Azure Cognitive Search", "category": "AI & ML"},
+
+    {"alias": "speech", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "speech service", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "speech services", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "text to speech", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "speech to text", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "tts", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "stt", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "language", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "language service", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "text analytics", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "clu", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "conversational language understanding", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "translator", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "translation", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "vision", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "computer vision", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "image analysis", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "face", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "face api", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "facial recognition", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "document intelligence", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "document ai", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "content safety", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "content moderation", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "video indexer", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "video ai", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "immersive reader", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "bot service", "service_name": "Azure Bot Service", "category": "AI & ML"},
+    {"alias": "bot", "service_name": "Azure Bot Service", "category": "AI & ML"},
+    {"alias": "chatbot", "service_name": "Azure Bot Service", "category": "AI & ML"},
+
+    {"alias": "ai agents", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "agents", "service_name": "Foundry Tools", "category": "AI & ML"},
+    {"alias": "foundry agents", "service_name": "Foundry Tools", "category": "AI & ML"},
+
+    {"alias": "container apps", "service_name": "Azure Container Apps", "category": "Containers"},
+    {"alias": "azure container apps", "service_name": "Azure Container Apps", "category": "Containers"},
+    {"alias": "aca", "service_name": "Azure Container Apps", "category": "Containers"},
+
+    {"alias": "container registry", "service_name": "Container Registry", "category": "Containers"},
+    {"alias": "acr", "service_name": "Container Registry", "category": "Containers"},
+
+    {"alias": "api management", "service_name": "API Management", "category": "Integration"},
+    {"alias": "apim", "service_name": "API Management", "category": "Integration"},
+    {"alias": "api gateway", "service_name": "API Management", "category": "Integration"},
+    {"alias": "ai gateway", "service_name": "API Management", "category": "Integration"},
+
+    {"alias": "key vault", "service_name": "Key Vault", "category": "Security"},
+    {"alias": "keyvault", "service_name": "Key Vault", "category": "Security"},
+    {"alias": "secrets", "service_name": "Key Vault", "category": "Security"},
+
+    {"alias": "application insights", "service_name": "Application Insights", "category": "Management"},
+    {"alias": "app insights", "service_name": "Application Insights", "category": "Management"},
+
+    {"alias": "log analytics", "service_name": "Log Analytics", "category": "Management"},
+    {"alias": "monitor", "service_name": "Azure Monitor", "category": "Management"},
+    {"alias": "azure monitor", "service_name": "Azure Monitor", "category": "Management"},
+
+    {"alias": "firewall", "service_name": "Azure Firewall", "category": "Networking"},
+    {"alias": "azure firewall", "service_name": "Azure Firewall", "category": "Networking"},
+
+    {"alias": "bastion", "service_name": "Azure Bastion", "category": "Networking"},
+    {"alias": "azure bastion", "service_name": "Azure Bastion", "category": "Networking"},
+
+    {"alias": "waf", "service_name": "Application Gateway", "category": "Networking"},
+    {"alias": "web application firewall", "service_name": "Application Gateway", "category": "Networking"},
+
+    {"alias": "private link", "service_name": "Virtual Network", "category": "Networking"},
+    {"alias": "private endpoint", "service_name": "Virtual Network", "category": "Networking"},
+
+    {"alias": "dns", "service_name": "Azure DNS", "category": "Networking"},
+    {"alias": "private dns", "service_name": "Azure DNS", "category": "Networking"},
+
+    {"alias": "bing search", "service_name": "Bing Search", "category": "AI & ML"},
+    {"alias": "bing", "service_name": "Bing Search", "category": "AI & ML"},
+
+    {"alias": "defender", "service_name": "Microsoft Defender for Cloud", "category": "Security"},
+    {"alias": "defender for cloud", "service_name": "Microsoft Defender for Cloud", "category": "Security"},
+    {"alias": "security center", "service_name": "Microsoft Defender for Cloud", "category": "Security"},
+
+    {"alias": "app configuration", "service_name": "App Configuration", "category": "Management"},
+    {"alias": "app config", "service_name": "App Configuration", "category": "Management"},
+
+    {"alias": "app service", "service_name": "Azure App Service", "category": "Compute"},
+    {"alias": "web app", "service_name": "Azure App Service", "category": "Compute"},
+    {"alias": "web apps", "service_name": "Azure App Service", "category": "Compute"},
+    {"alias": "app services", "service_name": "Azure App Service", "category": "Compute"},
+    {"alias": "websites", "service_name": "Azure App Service", "category": "Compute"},
+    {"alias": "web service", "service_name": "Azure App Service", "category": "Compute"},
+
+    {"alias": "virtual machine", "service_name": "Virtual Machines", "category": "Compute"},
+    {"alias": "vm", "service_name": "Virtual Machines", "category": "Compute"},
+    {"alias": "vms", "service_name": "Virtual Machines", "category": "Compute"},
+    {"alias": "compute", "service_name": "Virtual Machines", "category": "Compute"},
+
+    {"alias": "storage", "service_name": "Storage", "category": "Storage"},
+    {"alias": "blob", "service_name": "Storage", "category": "Storage"},
+    {"alias": "blob storage", "service_name": "Storage", "category": "Storage"},
+    {"alias": "file storage", "service_name": "Storage", "category": "Storage"},
+    {"alias": "disk", "service_name": "Storage", "category": "Storage"},
+
+    {"alias": "sql", "service_name": "SQL Database", "category": "Databases"},
+    {"alias": "sql database", "service_name": "SQL Database", "category": "Databases"},
+    {"alias": "database", "service_name": "SQL Database", "category": "Databases"},
+    {"alias": "sql server", "service_name": "SQL Database", "category": "Databases"},
+
+    {"alias": "cosmos", "service_name": "Azure Cosmos DB", "category": "Databases"},
+    {"alias": "cosmosdb", "service_name": "Azure Cosmos DB", "category": "Databases"},
+    {"alias": "cosmos db", "service_name": "Azure Cosmos DB", "category": "Databases"},
+    {"alias": "document db", "service_name": "Azure Cosmos DB", "category": "Databases"},
+
+    {"alias": "kubernetes", "service_name": "Azure Kubernetes Service", "category": "Containers"},
+    {"alias": "aks", "service_name": "Azure Kubernetes Service", "category": "Containers"},
+    {"alias": "k8s", "service_name": "Azure Kubernetes Service", "category": "Containers"},
+    {"alias": "container service", "service_name": "Azure Kubernetes Service", "category": "Containers"},
+
+    {"alias": "functions", "service_name": "Functions", "category": "Compute"},
+    {"alias": "function app", "service_name": "Functions", "category": "Compute"},
+    {"alias": "serverless", "service_name": "Functions", "category": "Compute"},
+    {"alias": "azure functions", "service_name": "Functions", "category": "Compute"},
+    {"alias": "logic apps", "service_name": "Logic Apps", "category": "Integration"},
+    {"alias": "logic app", "service_name": "Logic Apps", "category": "Integration"},
+
+    {"alias": "redis", "service_name": "Redis Cache", "category": "Databases"},
+    {"alias": "cache", "service_name": "Redis Cache", "category": "Databases"},
+    {"alias": "azure cache for redis", "service_name": "Redis Cache", "category": "Databases"},
+
+    {"alias": "networking", "service_name": "Virtual Network", "category": "Networking"},
+    {"alias": "network", "service_name": "Virtual Network", "category": "Networking"},
+    {"alias": "vnet", "service_name": "Virtual Network", "category": "Networking"},
+
+    {"alias": "load balancer", "service_name": "Load Balancer", "category": "Networking"},
+    {"alias": "lb", "service_name": "Load Balancer", "category": "Networking"},
+
+    {"alias": "application gateway", "service_name": "Application Gateway", "category": "Networking"},
+    {"alias": "app gateway", "service_name": "Application Gateway", "category": "Networking"},
+
+    {"alias": "front door", "service_name": "Azure Front Door Service", "category": "Networking"},
+    {"alias": "azure front door", "service_name": "Azure Front Door Service", "category": "Networking"},
+    {"alias": "cdn", "service_name": "Content Delivery Network", "category": "Networking"},
+    {"alias": "azure cdn", "service_name": "Content Delivery Network", "category": "Networking"},
+
+    {"alias": "communication services", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "azure communication services", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "acs", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "calling", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "pstn", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "telephony", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "sms", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "voip", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "call center", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "contact center", "service_name": "Voice Core", "category": "Communication"},
+    {"alias": "video calling", "service_name": "Voice Core", "category": "Communication"},
+
+    {"alias": "signalr", "service_name": "SignalR", "category": "Communication"},
+    {"alias": "azure signalr", "service_name": "SignalR", "category": "Communication"},
+    {"alias": "web pubsub", "service_name": "Web PubSub", "category": "Communication"},
+    {"alias": "azure web pubsub", "service_name": "Web PubSub", "category": "Communication"},
+    {"alias": "real-time messaging", "service_name": "SignalR", "category": "Communication"},
+
+    {"alias": "service bus", "service_name": "Service Bus", "category": "Integration"},
+    {"alias": "azure service bus", "service_name": "Service Bus", "category": "Integration"},
+    {"alias": "message queue", "service_name": "Service Bus", "category": "Integration"},
+    {"alias": "message bus", "service_name": "Service Bus", "category": "Integration"},
+
+    {"alias": "event grid", "service_name": "Event Grid", "category": "Integration"},
+    {"alias": "azure event grid", "service_name": "Event Grid", "category": "Integration"},
+    {"alias": "event-driven", "service_name": "Event Grid", "category": "Integration"},
+
+    {"alias": "event hubs", "service_name": "Event Hubs", "category": "Integration"},
+    {"alias": "azure event hubs", "service_name": "Event Hubs", "category": "Integration"},
+    {"alias": "event streaming", "service_name": "Event Hubs", "category": "Integration"},
+
+    {"alias": "notification hubs", "service_name": "Notification Hubs", "category": "Integration"},
+    {"alias": "push notifications", "service_name": "Notification Hubs", "category": "Integration"},
+
+    {"alias": "power bi", "service_name": "Power BI Embedded", "category": "Analytics"},
+    {"alias": "powerbi", "service_name": "Power BI Embedded", "category": "Analytics"},
+    {"alias": "bi", "service_name": "Power BI Embedded", "category": "Analytics"},
+
+    {"alias": "synapse", "service_name": "Azure Synapse Analytics", "category": "Analytics"},
+    {"alias": "azure synapse", "service_name": "Azure Synapse Analytics", "category": "Analytics"},
+    {"alias": "data explorer", "service_name": "Azure Data Explorer", "category": "Analytics"},
+    {"alias": "adx", "service_name": "Azure Data Explorer", "category": "Analytics"},
+    {"alias": "kusto", "service_name": "Azure Data Explorer", "category": "Analytics"},
+
+    {"alias": "postgresql", "service_name": "Azure Database for PostgreSQL", "category": "Databases"},
+    {"alias": "postgres", "service_name": "Azure Database for PostgreSQL", "category": "Databases"},
+
+    {"alias": "mysql", "service_name": "Azure Database for MySQL", "category": "Databases"},
+
+    {"alias": "databricks", "service_name": "Azure Databricks", "category": "Analytics"},
+    {"alias": "azure databricks", "service_name": "Azure Databricks", "category": "Analytics"},
+    {"alias": "spark", "service_name": "Azure Databricks", "category": "Analytics"},
+
+    {"alias": "data factory", "service_name": "Azure Data Factory v2", "category": "Analytics"},
+    {"alias": "adf", "service_name": "Azure Data Factory v2", "category": "Analytics"},
+    {"alias": "azure data factory", "service_name": "Azure Data Factory v2", "category": "Analytics"},
+    {"alias": "data pipeline", "service_name": "Azure Data Factory v2", "category": "Analytics"},
+
+    {"alias": "data lake", "service_name": "Data Lake Store", "category": "Analytics"},
+    {"alias": "data lake store", "service_name": "Data Lake Store", "category": "Analytics"},
+    {"alias": "adls", "service_name": "Data Lake Store", "category": "Analytics"},
+
+    {"alias": "purview", "service_name": "Azure Purview", "category": "Analytics"},
+    {"alias": "azure purview", "service_name": "Azure Purview", "category": "Analytics"},
+    {"alias": "data governance", "service_name": "Azure Purview", "category": "Analytics"},
+
+    {"alias": "analysis services", "service_name": "Azure Analysis Services", "category": "Analytics"},
+    {"alias": "azure analysis services", "service_name": "Azure Analysis Services", "category": "Analytics"},
+    {"alias": "ssas", "service_name": "Azure Analysis Services", "category": "Analytics"},
+
+    {"alias": "hdinsight", "service_name": "HDInsight", "category": "Analytics"},
+    {"alias": "hadoop", "service_name": "HDInsight", "category": "Analytics"},
+
+    {"alias": "data share", "service_name": "Azure Data Share", "category": "Analytics"},
+
+    {"alias": "stream analytics", "service_name": "Stream Analytics", "category": "Analytics"},
+    {"alias": "azure stream analytics", "service_name": "Stream Analytics", "category": "Analytics"},
+
+    {"alias": "data catalog", "service_name": "Data Catalog", "category": "Analytics"},
+
+    {"alias": "graph data connect", "service_name": "Microsoft Graph data connect", "category": "Analytics"},
+
+    {"alias": "azure arc", "service_name": "Azure Arc", "category": "Azure Arc"},
+    {"alias": "arc", "service_name": "Azure Arc", "category": "Azure Arc"},
+
+    {"alias": "cloud hsm", "service_name": "Azure Cloud HSM", "category": "Security"},
+    {"alias": "hsm", "service_name": "Azure Cloud HSM", "category": "Security"},
+
+    {"alias": "entra", "service_name": "Microsoft Entra", "category": "Security"},
+    {"alias": "microsoft entra", "service_name": "Microsoft Entra", "category": "Security"},
+    {"alias": "entra id", "service_name": "Microsoft Entra", "category": "Security"},
+    {"alias": "azure ad", "service_name": "Microsoft Entra", "category": "Security"},
+    {"alias": "active directory", "service_name": "Microsoft Entra", "category": "Security"},
+
+    {"alias": "entra verified id", "service_name": "Microsoft Entra Verified ID", "category": "Security"},
+    {"alias": "verified id", "service_name": "Microsoft Entra Verified ID", "category": "Security"},
+
+    {"alias": "entra domain services", "service_name": "Microsoft Entra Domain Services", "category": "Security"},
+    {"alias": "aad ds", "service_name": "Microsoft Entra Domain Services", "category": "Security"},
+
+    {"alias": "stack edge", "service_name": "Azure Stack Edge", "category": "Azure Stack"},
+    {"alias": "azure stack edge", "service_name": "Azure Stack Edge", "category": "Azure Stack"},
+
+    {"alias": "stack hub", "service_name": "Azure Stack Hub", "category": "Azure Stack"},
+    {"alias": "azure stack hub", "service_name": "Azure Stack Hub", "category": "Azure Stack"},
+
+    {"alias": "stack hci", "service_name": "Azure Stack HCI", "category": "Azure Stack"},
+    {"alias": "azure stack hci", "service_name": "Azure Stack HCI", "category": "Azure Stack"},
+
+    {"alias": "cloud services", "service_name": "Cloud Services", "category": "Compute"},
+
+    {"alias": "container instances", "service_name": "Container Instances", "category": "Containers"},
+    {"alias": "aci", "service_name": "Container Instances", "category": "Containers"},
+    {"alias": "azure container instances", "service_name": "Container Instances", "category": "Containers"},
+
+    {"alias": "fabric", "service_name": "Microsoft Fabric", "category": "Data"},
+    {"alias": "microsoft fabric", "service_name": "Microsoft Fabric", "category": "Data"},
+
+    {"alias": "sql managed instance", "service_name": "SQL Managed Instance", "category": "Databases"},
+    {"alias": "managed instance", "service_name": "SQL Managed Instance", "category": "Databases"},
+    {"alias": "sql mi", "service_name": "SQL Managed Instance", "category": "Databases"},
+
+    {"alias": "cassandra", "service_name": "Azure Managed Instance for Apache Cassandra", "category": "Databases"},
+    {"alias": "managed cassandra", "service_name": "Azure Managed Instance for Apache Cassandra", "category": "Databases"},
+
+    {"alias": "mariadb", "service_name": "Azure Database for MariaDB", "category": "Databases"},
+
+    {"alias": "database migration", "service_name": "Azure Database Migration Service", "category": "Databases"},
+    {"alias": "dms", "service_name": "Azure Database Migration Service", "category": "Databases"},
+
+    {"alias": "sql data warehouse", "service_name": "SQL Data Warehouse", "category": "Databases"},
+
+    {"alias": "grafana", "service_name": "Azure Grafana Service", "category": "Developer Tools"},
+    {"alias": "azure grafana", "service_name": "Azure Grafana Service", "category": "Developer Tools"},
+
+    {"alias": "lab services", "service_name": "Azure Lab Services", "category": "Developer Tools"},
+    {"alias": "devops", "service_name": "Azure DevOps", "category": "Developer Tools"},
+    {"alias": "azure devops", "service_name": "Azure DevOps", "category": "Developer Tools"},
+
+    {"alias": "playwright testing", "service_name": "Microsoft Playwright Testing", "category": "Developer Tools"},
+
+    {"alias": "iot hub", "service_name": "IoT Hub", "category": "Internet of Things"},
+    {"alias": "azure iot hub", "service_name": "IoT Hub", "category": "Internet of Things"},
+    {"alias": "iot", "service_name": "IoT Hub", "category": "Internet of Things"},
+
+    {"alias": "iot central", "service_name": "IoT Central", "category": "Internet of Things"},
+    {"alias": "azure iot central", "service_name": "IoT Central", "category": "Internet of Things"},
+
+    {"alias": "digital twins", "service_name": "Digital Twins", "category": "Internet of Things"},
+    {"alias": "azure digital twins", "service_name": "Digital Twins", "category": "Internet of Things"},
+
+    {"alias": "azure maps", "service_name": "Azure Maps", "category": "Internet of Things"},
+    {"alias": "maps", "service_name": "Azure Maps", "category": "Internet of Things"},
+
+    {"alias": "time series insights", "service_name": "Time Series Insights", "category": "Internet of Things"},
+    {"alias": "tsi", "service_name": "Time Series Insights", "category": "Internet of Things"},
+
+    {"alias": "iot operations", "service_name": "Azure IoT Operations", "category": "Internet of Things"},
+
+    {"alias": "sentinel", "service_name": "Sentinel", "category": "Management"},
+    {"alias": "azure sentinel", "service_name": "Sentinel", "category": "Management"},
+    {"alias": "siem", "service_name": "Sentinel", "category": "Management"},
+
+    {"alias": "automation", "service_name": "Automation", "category": "Management"},
+    {"alias": "azure automation", "service_name": "Automation", "category": "Management"},
+    {"alias": "runbook", "service_name": "Automation", "category": "Management"},
+
+    {"alias": "site recovery", "service_name": "Azure Site Recovery", "category": "Management"},
+    {"alias": "asr", "service_name": "Azure Site Recovery", "category": "Management"},
+    {"alias": "disaster recovery", "service_name": "Azure Site Recovery", "category": "Management"},
+
+    {"alias": "chaos studio", "service_name": "Azure Chaos Studio", "category": "Management"},
+    {"alias": "chaos engineering", "service_name": "Azure Chaos Studio", "category": "Management"},
+
+    {"alias": "update manager", "service_name": "Azure Update Manager", "category": "Management"},
+
+    {"alias": "vpn gateway", "service_name": "VPN Gateway", "category": "Networking"},
+    {"alias": "vpn", "service_name": "VPN Gateway", "category": "Networking"},
+    {"alias": "azure vpn", "service_name": "VPN Gateway", "category": "Networking"},
+
+    {"alias": "expressroute", "service_name": "ExpressRoute", "category": "Networking"},
+    {"alias": "express route", "service_name": "ExpressRoute", "category": "Networking"},
+
+    {"alias": "ddos protection", "service_name": "Azure DDOS Protection", "category": "Networking"},
+    {"alias": "ddos", "service_name": "Azure DDOS Protection", "category": "Networking"},
+
+    {"alias": "traffic manager", "service_name": "Traffic Manager", "category": "Networking"},
+
+    {"alias": "network watcher", "service_name": "Network Watcher", "category": "Networking"},
+
+    {"alias": "virtual wan", "service_name": "Virtual WAN", "category": "Networking"},
+    {"alias": "vwan", "service_name": "Virtual WAN", "category": "Networking"},
+
+    {"alias": "route server", "service_name": "Azure Route Server", "category": "Networking"},
+
+    {"alias": "bandwidth", "service_name": "Bandwidth", "category": "Networking"},
+    {"alias": "data transfer", "service_name": "Bandwidth", "category": "Networking"},
+    {"alias": "egress", "service_name": "Bandwidth", "category": "Networking"},
+
+    {"alias": "netapp", "service_name": "Azure NetApp Files", "category": "Storage"},
+    {"alias": "netapp files", "service_name": "Azure NetApp Files", "category": "Storage"},
+    {"alias": "azure netapp", "service_name": "Azure NetApp Files", "category": "Storage"},
+
+    {"alias": "backup", "service_name": "Backup", "category": "Storage"},
+    {"alias": "azure backup", "service_name": "Backup", "category": "Storage"},
+
+    {"alias": "data box", "service_name": "Data Box", "category": "Storage"},
+    {"alias": "azure data box", "service_name": "Data Box", "category": "Storage"},
+
+    {"alias": "purview security", "service_name": "Microsoft Purview", "category": "Security"},
+    {"alias": "microsoft purview", "service_name": "Microsoft Purview", "category": "Security"},
+    {"alias": "compliance", "service_name": "Microsoft Purview", "category": "Security"},
+
+    {"alias": "security copilot", "service_name": "Microsoft Security Copilot", "category": "Security"},
+    {"alias": "microsoft security copilot", "service_name": "Microsoft Security Copilot", "category": "Security"},
+
+    {"alias": "mfa", "service_name": "Multi-Factor Authentication", "category": "Security"},
+    {"alias": "multi-factor authentication", "service_name": "Multi-Factor Authentication", "category": "Security"},
+
+    {"alias": "payment hsm", "service_name": "Microsoft Azure Payment HSM", "category": "Security"},
+
+    {"alias": "confidential ledger", "service_name": "Azure confidential ledger", "category": "Security"},
+
+    {"alias": "trusted signing", "service_name": "Trusted Signing", "category": "Security"},
+    {"alias": "code signing", "service_name": "Trusted Signing", "category": "Security"},
+
+    {"alias": "windows virtual desktop", "service_name": "Windows Virtual Desktop", "category": "Compute"},
+    {"alias": "wvd", "service_name": "Windows Virtual Desktop", "category": "Compute"},
+    {"alias": "avd", "service_name": "Windows Virtual Desktop", "category": "Compute"},
+    {"alias": "azure virtual desktop", "service_name": "Windows Virtual Desktop", "category": "Compute"},
+
+    {"alias": "spring cloud", "service_name": "Azure Spring Cloud", "category": "Compute"},
+    {"alias": "spring apps", "service_name": "Azure Spring Cloud", "category": "Compute"},
+    {"alias": "azure spring apps", "service_name": "Azure Spring Cloud", "category": "Compute"},
+
+    {"alias": "remote rendering", "service_name": "Azure Remote Rendering", "category": "Mixed Reality"},
+
+    {"alias": "quantum", "service_name": "Quantum Computing", "category": "Quantum Computing"},
+    {"alias": "quantum computing", "service_name": "Quantum Computing", "category": "Quantum Computing"},
+
+    {"alias": "power apps", "service_name": "Power Apps", "category": "Power Platform"},
+    {"alias": "powerapps", "service_name": "Power Apps", "category": "Power Platform"},
+    {"alias": "power automate", "service_name": "Power Automate", "category": "Power Platform"},
+    {"alias": "power pages", "service_name": "Power Pages", "category": "Power Platform"},
+    {"alias": "dataverse", "service_name": "Dataverse", "category": "Power Platform"},
+
+    {"alias": "dragon copilot", "service_name": "Microsoft Dragon Copilot", "category": "Other"},
+    {"alias": "fhir", "service_name": "Azure API for FHIR", "category": "Other"},
+    {"alias": "health api", "service_name": "Azure API for FHIR", "category": "Other"},
+
+    {"alias": "iot security", "service_name": "Azure IoT Security", "category": "Security"},
+    {"alias": "graph services", "service_name": "Microsoft Graph Services", "category": "Security"},
+
+    {"alias": "api center", "service_name": "Azure API Center", "category": "Integration"},
+
+    {"alias": "playlab", "service_name": "PlayFab", "category": "Gaming"},
+    {"alias": "playfab", "service_name": "PlayFab", "category": "Gaming"},
+
+    {"alias": "azure data factory v1", "service_name": "Azure Data Factory", "category": "Analytics"},
+    {"alias": "data factory v1", "service_name": "Azure Data Factory", "category": "Analytics"},
+
+    {"alias": "power bi standalone", "service_name": "Power BI", "category": "Analytics"},
+    {"alias": "power bi pro", "service_name": "Power BI", "category": "Analytics"},
+    {"alias": "power bi premium", "service_name": "Power BI", "category": "Analytics"},
+
+    {"alias": "firmware analysis", "service_name": "Firmware Analysis", "category": "Azure Arc"},
+    {"alias": "iot firmware", "service_name": "Firmware Analysis", "category": "Azure Arc"},
+
+    {"alias": "acs email", "service_name": "Email", "category": "Communication"},
+    {"alias": "azure email", "service_name": "Email", "category": "Communication"},
+
+    {"alias": "acs messaging", "service_name": "Messaging", "category": "Communication"},
+    {"alias": "chat messaging", "service_name": "Messaging", "category": "Communication"},
+
+    {"alias": "network traversal", "service_name": "Network Traversal", "category": "Communication"},
+    {"alias": "turn relay", "service_name": "Network Traversal", "category": "Communication"},
+
+    {"alias": "phone numbers", "service_name": "Phone Numbers", "category": "Communication"},
+    {"alias": "did numbers", "service_name": "Phone Numbers", "category": "Communication"},
+
+    {"alias": "acs routing", "service_name": "Routing", "category": "Communication"},
+    {"alias": "call routing", "service_name": "Routing", "category": "Communication"},
+
+    {"alias": "acs sms", "service_name": "SMS", "category": "Communication"},
+
+    {"alias": "acs voice", "service_name": "Voice", "category": "Communication"},
+
+    {"alias": "orbital edge", "service_name": "Azure Orbital Edge", "category": "Azure Stack"},
+    {"alias": "azure orbital edge", "service_name": "Azure Orbital Edge", "category": "Azure Stack"},
+
+    {"alias": "vm licenses", "service_name": "Virtual Machines Licenses", "category": "Compute"},
+    {"alias": "virtual machine licenses", "service_name": "Virtual Machines Licenses", "category": "Compute"},
+    {"alias": "windows server license", "service_name": "Virtual Machines Licenses", "category": "Compute"},
+
+    {"alias": "aks stack hci", "service_name": "AKS on Azure Stack HCI", "category": "Containers"},
+    {"alias": "aks on stack hci", "service_name": "AKS on Azure Stack HCI", "category": "Containers"},
+
+    {"alias": "arc aks", "service_name": "Azure Arc-enabled AKS", "category": "Containers"},
+    {"alias": "arc enabled aks", "service_name": "Azure Arc-enabled AKS", "category": "Containers"},
+
+    {"alias": "planetary computer", "service_name": "Microsoft Planetary Computer Pro", "category": "Data"},
+    {"alias": "planetary computer pro", "service_name": "Microsoft Planetary Computer Pro", "category": "Data"},
+
+    {"alias": "arc databases", "service_name": "Azure Arc Enabled Databases", "category": "Databases"},
+    {"alias": "arc enabled databases", "service_name": "Azure Arc Enabled Databases", "category": "Databases"},
+    {"alias": "arc sql", "service_name": "Azure Arc Enabled Databases", "category": "Databases"},
+
+    {"alias": "stretch database", "service_name": "SQL Server Stretch Database", "category": "Databases"},
+    {"alias": "sql stretch", "service_name": "SQL Server Stretch Database", "category": "Databases"},
+
+    {"alias": "app testing", "service_name": "Azure App Testing", "category": "Developer Tools"},
+    {"alias": "azure app testing", "service_name": "Azure App Testing", "category": "Developer Tools"},
+
+    {"alias": "fluid relay", "service_name": "Azure Fluid Relay", "category": "Developer Tools"},
+    {"alias": "azure fluid relay", "service_name": "Azure Fluid Relay", "category": "Developer Tools"},
+
+    {"alias": "github", "service_name": "GitHub", "category": "Developer Tools"},
+    {"alias": "github enterprise", "service_name": "GitHub", "category": "Developer Tools"},
+
+    {"alias": "github ae", "service_name": "GitHub AE", "category": "Developer Tools"},
+
+    {"alias": "test base", "service_name": "Test Base", "category": "Developer Tools"},
+    {"alias": "azure test base", "service_name": "Test Base", "category": "Developer Tools"},
+
+    {"alias": "codespaces", "service_name": "Visual Studio Codespaces", "category": "Developer Tools"},
+    {"alias": "visual studio codespaces", "service_name": "Visual Studio Codespaces", "category": "Developer Tools"},
+
+    {"alias": "visual studio subscription", "service_name": "Visual Studio Subscription", "category": "Developer Tools"},
+    {"alias": "vs subscription", "service_name": "Visual Studio Subscription", "category": "Developer Tools"},
+    {"alias": "msdn", "service_name": "Visual Studio Subscription", "category": "Developer Tools"},
+
+    {"alias": "biztalk", "service_name": "BizTalk Services", "category": "Integration"},
+    {"alias": "biztalk services", "service_name": "BizTalk Services", "category": "Integration"},
+
+    {"alias": "aks edge", "service_name": "AKS Edge Essentials", "category": "Internet of Things"},
+    {"alias": "aks edge essentials", "service_name": "AKS Edge Essentials", "category": "Internet of Things"},
+
+    {"alias": "device registry", "service_name": "Azure Device Registry", "category": "Internet of Things"},
+    {"alias": "azure device registry", "service_name": "Azure Device Registry", "category": "Internet of Things"},
+
+    {"alias": "azure policy", "service_name": "Azure Policy", "category": "Management"},
+    {"alias": "policy", "service_name": "Azure Policy", "category": "Management"},
+
+    {"alias": "change tracking", "service_name": "Change Tracking and Inventory", "category": "Management"},
+    {"alias": "inventory tracking", "service_name": "Change Tracking and Inventory", "category": "Management"},
+
+    {"alias": "customer insights", "service_name": "Dynamics 365 for Customer Insights", "category": "Management"},
+    {"alias": "dynamics 365 customer insights", "service_name": "Dynamics 365 for Customer Insights", "category": "Management"},
+
+    {"alias": "oms", "service_name": "Insight and Analytics", "category": "Management"},
+    {"alias": "insight and analytics", "service_name": "Insight and Analytics", "category": "Management"},
+
+    {"alias": "scheduler", "service_name": "Scheduler", "category": "Management"},
+    {"alias": "azure scheduler", "service_name": "Scheduler", "category": "Management"},
+
+    {"alias": "container networking", "service_name": "Advanced Container Networking Services", "category": "Networking"},
+    {"alias": "advanced container networking", "service_name": "Advanced Container Networking Services", "category": "Networking"},
+
+    {"alias": "firewall manager", "service_name": "Azure Firewall Manager", "category": "Networking"},
+    {"alias": "azure firewall manager", "service_name": "Azure Firewall Manager", "category": "Networking"},
+
+    {"alias": "orbital", "service_name": "Azure Orbital", "category": "Networking"},
+    {"alias": "azure orbital", "service_name": "Azure Orbital", "category": "Networking"},
+    {"alias": "satellite", "service_name": "Azure Orbital", "category": "Networking"},
+
+    {"alias": "private mobile network", "service_name": "Private Mobile Network", "category": "Networking"},
+    {"alias": "private 5g", "service_name": "Private Mobile Network", "category": "Networking"},
+    {"alias": "mobile network", "service_name": "Private Mobile Network", "category": "Networking"},
+
+    {"alias": "energy data manager", "service_name": "Energy Data Manager", "category": "Other"},
+    {"alias": "osdu", "service_name": "Energy Data Manager", "category": "Other"},
+
+    {"alias": "bing services", "service_name": "MS Bing Services", "category": "Other"},
+    {"alias": "ms bing", "service_name": "MS Bing Services", "category": "Other"},
+
+    {"alias": "sap embrace", "service_name": "SAP Embrace", "category": "Other"},
+    {"alias": "sap on azure", "service_name": "SAP Embrace", "category": "Other"},
+
+    {"alias": "azure ad b2c", "service_name": "Azure Active Directory B2C", "category": "Security"},
+    {"alias": "b2c", "service_name": "Azure Active Directory B2C", "category": "Security"},
+    {"alias": "entra external id b2c", "service_name": "Azure Active Directory B2C", "category": "Security"},
+
+    {"alias": "external identities", "service_name": "Azure Active Directory for External Identities", "category": "Security"},
+    {"alias": "azure ad external", "service_name": "Azure Active Directory for External Identities", "category": "Security"},
+    {"alias": "entra external identities", "service_name": "Azure Active Directory for External Identities", "category": "Security"},
+
+    {"alias": "ai ops telecom", "service_name": "AI Ops", "category": "Telecommunications"},
+    {"alias": "telecom ai ops", "service_name": "AI Ops", "category": "Telecommunications"},
+
+    {"alias": "operator nexus", "service_name": "Azure Operator Nexus", "category": "Telecommunications"},
+    {"alias": "azure operator nexus", "service_name": "Azure Operator Nexus", "category": "Telecommunications"},
+
+    {"alias": "packet core", "service_name": "Packet Core", "category": "Telecommunications"},
+    {"alias": "5g core", "service_name": "Packet Core", "category": "Telecommunications"},
+    {"alias": "mobile packet core", "service_name": "Packet Core", "category": "Telecommunications"},
+
+    {"alias": "community training", "service_name": "Community Training", "category": "Web"},
+    {"alias": "azure community training", "service_name": "Community Training", "category": "Web"}
+  ],
+  "deprecated_services": [
+    {
+      "alias": "qna maker",
+      "service_name": "Foundry Tools",
+      "status": "retired",
+      "retirement_date": "2025-03-31",
+      "replacement": "Custom Question Answering (Azure AI Language)",
+      "message": "QnA Maker was retired on March 31, 2025. Use Custom Question Answering in Azure AI Language instead."
+    },
+    {
+      "alias": "luis",
+      "service_name": "Foundry Tools",
+      "status": "retired",
+      "retirement_date": "2025-10-31",
+      "replacement": "Conversational Language Understanding / CLU (Azure AI Language)",
+      "message": "LUIS was retired on October 31, 2025. Use CLU in Azure AI Language instead."
+    },
+    {
+      "alias": "anomaly detector",
+      "service_name": "Foundry Tools",
+      "status": "retiring",
+      "retirement_date": "2026-10-01",
+      "replacement": "Azure AI services or Azure Machine Learning",
+      "message": "Anomaly Detector retires October 1, 2026. No new resources can be created."
+    },
+    {
+      "alias": "personalizer",
+      "service_name": "Foundry Tools",
+      "status": "retiring",
+      "retirement_date": "2026-10-01",
+      "replacement": "Azure AI services or Azure Machine Learning",
+      "message": "Personalizer retires October 1, 2026. No new resources can be created."
+    },
+    {
+      "alias": "metrics advisor",
+      "service_name": "Foundry Tools",
+      "status": "retiring",
+      "retirement_date": "2026-10-01",
+      "replacement": "Azure Monitor or Azure Machine Learning",
+      "message": "Metrics Advisor retires October 1, 2026. No new resources can be created."
+    },
+    {
+      "alias": "content moderator",
+      "service_name": "Foundry Tools",
+      "status": "deprecated",
+      "retirement_date": "2027-03-15",
+      "replacement": "Azure AI Content Safety",
+      "message": "Content Moderator is deprecated (retires March 15, 2027). Use Azure AI Content Safety instead."
+    },
+    {
+      "alias": "form recognizer",
+      "service_name": "Foundry Tools",
+      "status": "rebranded",
+      "retirement_date": null,
+      "replacement": "Azure AI Document Intelligence",
+      "message": "Form Recognizer has been rebranded to Azure AI Document Intelligence. Use 'document intelligence' instead."
+    },
+    {
+      "alias": "custom vision",
+      "service_name": "Foundry Tools",
+      "status": "retiring",
+      "retirement_date": "2028-09-25",
+      "replacement": "Azure AI Vision (GA) or Azure Machine Learning",
+      "message": "Custom Vision retires September 25, 2028. Consider migrating to Azure AI Vision or Azure ML."
+    }
+  ],
+  "sku_tiers": [
+    {
+      "service_name": "Microsoft Fabric",
+      "description": "Fabric capacity SKUs map named tiers to Capacity Unit (CU) counts. API prices per CU/hour.",
+      "unit_name": "Capacity Units (CU)",
+      "api_sku_name": "Fabric Capacity",
+      "api_unit": "1 Hour",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/",
+      "source_date": "2026-03-20",
+      "tiers": [
+        {"name": "F2",    "units": 2,    "description": "Trial/Dev - 2 CU"},
+        {"name": "F4",    "units": 4,    "description": "Dev - 4 CU"},
+        {"name": "F8",    "units": 8,    "description": "Dev/Test - 8 CU"},
+        {"name": "F16",   "units": 16,   "description": "Test/Small Prod - 16 CU"},
+        {"name": "F32",   "units": 32,   "description": "Small Prod - 32 CU"},
+        {"name": "F64",   "units": 64,   "description": "Production - 64 CU"},
+        {"name": "F128",  "units": 128,  "description": "Production - 128 CU"},
+        {"name": "F256",  "units": 256,  "description": "Large Production - 256 CU"},
+        {"name": "F512",  "units": 512,  "description": "Large Production - 512 CU"},
+        {"name": "F1024", "units": 1024, "description": "Enterprise - 1024 CU"},
+        {"name": "F2048", "units": 2048, "description": "Enterprise - 2048 CU"}
+      ]
+    },
+    {
+      "service_name": "Azure Cosmos DB",
+      "description": "Cosmos DB throughput tiers map to Request Units per second (RU/s). API prices per 100 RU/hour.",
+      "unit_name": "Request Units (RU/s)",
+      "api_sku_name": "RUs",
+      "api_unit": "1/Hour",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/cosmos-db/autoscale-provisioned/",
+      "source_date": "2026-03-20",
+      "tiers": [
+        {"name": "400 RU/s",   "units": 4,   "description": "Minimum autoscale - 400 RU/s (4x100)"},
+        {"name": "1000 RU/s",  "units": 10,  "description": "Light workload - 1,000 RU/s"},
+        {"name": "4000 RU/s",  "units": 40,  "description": "Medium workload - 4,000 RU/s"},
+        {"name": "10000 RU/s", "units": 100, "description": "Heavy workload - 10,000 RU/s"},
+        {"name": "40000 RU/s", "units": 400, "description": "Large production - 40,000 RU/s"}
+      ]
+    },
+    {
+      "service_name": "Azure AI Search",
+      "description": "AI Search tiers with fixed hourly pricing. Each tier includes set storage and partition limits.",
+      "unit_name": "Search Units (SU)",
+      "api_sku_name": null,
+      "api_unit": "1 Hour",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/search/",
+      "source_date": "2026-03-20",
+      "tiers": [
+        {"name": "Free",       "units": 0, "description": "50 MB storage, 3 indexes"},
+        {"name": "Basic",      "units": 1, "description": "2 GB storage, 15 indexes"},
+        {"name": "Standard S1","units": 1, "description": "25 GB/partition, 50 indexes"},
+        {"name": "Standard S2","units": 1, "description": "100 GB/partition, 200 indexes"},
+        {"name": "Standard S3","units": 1, "description": "200 GB/partition, 1000 indexes"}
+      ]
+    },
+    {
+      "service_name": "Foundry Models",
+      "description": "Azure OpenAI and partner model pricing. Tiers represent per-token costs for key models. Prices are per 1K or 1M tokens depending on model.",
+      "unit_name": "Tokens",
+      "api_sku_name": null,
+      "api_unit": "1K",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+      "source_date": "2026-03-20",
+      "tiers": [
+        {"name": "GPT-4.1 Input",              "units": 1, "description": "GPT-4.1 input tokens — $0.002/1K tokens (global)"},
+        {"name": "GPT-4.1 Output",             "units": 1, "description": "GPT-4.1 output tokens — $0.008/1K tokens (global)"},
+        {"name": "GPT-4.1 Cached Input",       "units": 1, "description": "GPT-4.1 cached input — $0.001/1K tokens (global)"},
+        {"name": "GPT-4.1 mini Input",         "units": 1, "description": "GPT-4.1-mini input — $0.0004/1K tokens"},
+        {"name": "GPT-4.1 mini Output",        "units": 1, "description": "GPT-4.1-mini output — $0.00176/1K tokens"},
+        {"name": "GPT-4.1 nano Input",         "units": 1, "description": "GPT-4.1-nano input — $0.0001/1K tokens"},
+        {"name": "GPT-4.1 nano Output",        "units": 1, "description": "GPT-4.1-nano output — $0.0004/1K tokens"},
+        {"name": "GPT-4o Input",               "units": 1, "description": "GPT-4o input — $0.0025/1K tokens (global)"},
+        {"name": "GPT-4o Output",              "units": 1, "description": "GPT-4o output — $0.01/1K tokens (global)"},
+        {"name": "GPT-4o mini Input",          "units": 1, "description": "GPT-4o-mini input — $0.00015/1K tokens"},
+        {"name": "GPT-4o mini Output",         "units": 1, "description": "GPT-4o-mini output — $0.0006/1K tokens"},
+        {"name": "o4-mini Input",              "units": 1, "description": "o4-mini reasoning input — $0.0011/1K tokens"},
+        {"name": "o4-mini Output",             "units": 1, "description": "o4-mini reasoning output — $0.0044/1K tokens"},
+        {"name": "o3-mini Input",              "units": 1, "description": "o3-mini reasoning input — $0.00121/1K tokens"},
+        {"name": "o3-mini Output",             "units": 1, "description": "o3-mini reasoning output — $0.0044/1K tokens"},
+        {"name": "DeepSeek-V3 Input",          "units": 1, "description": "DeepSeek-V3 input — $0.00064/1K tokens"},
+        {"name": "DeepSeek-V3 Output",         "units": 1, "description": "DeepSeek-V3 output — $0.00256/1K tokens"},
+        {"name": "Phi-4-mini Input",           "units": 1, "description": "Phi-4-mini-reasoning input — $0.000075/1K tokens"},
+        {"name": "GPT-4.1 Fine-tune Hosting",  "units": 1, "description": "Fine-tuned GPT-4.1 hosting — $1.70/hour"},
+        {"name": "PTU (Provisioned)",          "units": 1, "description": "Provisioned Throughput Unit — varies by model, commitment required"}
+      ]
+    },
+    {
+      "service_name": "Azure Machine Learning",
+      "description": "AI Foundry / Azure ML compute and managed model hosting. Tiers cover workspace compute and serverless model endpoints.",
+      "unit_name": "Compute",
+      "api_sku_name": null,
+      "api_unit": "1 Hour",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/machine-learning/",
+      "source_date": "2026-03-20",
+      "tiers": [
+        {"name": "Workspace (Free)",       "units": 0, "description": "ML workspace management — free (pay only for compute)"},
+        {"name": "DS11v2",                 "units": 1, "description": "Dev compute — 2 vCPU, 14 GB, ~$0.19/hr"},
+        {"name": "DS3v2",                  "units": 1, "description": "Standard compute — 4 vCPU, 14 GB, ~$0.29/hr"},
+        {"name": "NC6sv3 (GPU)",           "units": 1, "description": "GPU compute — 6 vCPU, 112 GB, 1x V100, ~$3.06/hr"},
+        {"name": "NC24sv3 (GPU)",          "units": 1, "description": "GPU compute — 24 vCPU, 448 GB, 4x V100, ~$12.24/hr"},
+        {"name": "NC24ads_A100_v4 (GPU)",  "units": 1, "description": "A100 GPU — 24 vCPU, 220 GB, 1x A100, ~$3.67/hr"},
+        {"name": "ND96asr_v4 (GPU)",       "units": 1, "description": "8x A100 GPU — 96 vCPU, 900 GB, 8x A100 80GB, ~$27.20/hr"},
+        {"name": "NDm_A100_v4 (GPU)",      "units": 1, "description": "8x A100 GPU (memory opt) — 96 vCPU, 1900 GB, ~$32.77/hr"},
+        {"name": "Managed Online Endpoint", "units": 1, "description": "Serverless endpoint — pay per inference request/token"},
+        {"name": "Llama-4-Scout Input",    "units": 1, "description": "Llama-4-Scout-17B-16E managed hosting — $0.00016/1K input tokens"},
+        {"name": "Llama-4-Scout Output",   "units": 1, "description": "Llama-4-Scout-17B-16E managed hosting — $0.000345/1K output tokens"}
+      ]
+    },
+    {
+      "service_name": "Foundry Tools",
+      "description": "Azure AI Services (Speech, Vision, Language, Translator, etc.) under the Foundry Tools billing umbrella.",
+      "unit_name": "Transactions",
+      "api_sku_name": null,
+      "api_unit": "varies",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/",
+      "source_date": "2026-03-20",
+      "tiers": [
+        {"name": "Speech-to-Text (Standard)",  "units": 1, "description": "Real-time STT — $1.00/audio hour"},
+        {"name": "Text-to-Speech (Neural)",    "units": 1, "description": "Neural TTS — $16.00/1M characters"},
+        {"name": "Translator (Standard)",      "units": 1, "description": "Text translation — $10.00/1M characters"},
+        {"name": "Language (Standard)",        "units": 1, "description": "Text analytics/NER/sentiment — $1.00/1K transactions"},
+        {"name": "Vision (Standard)",          "units": 1, "description": "Image analysis/OCR — $1.00/1K transactions"},
+        {"name": "Document Intelligence (Read)","units": 1, "description": "Document read/extract — $1.50/1K pages"},
+        {"name": "Content Safety",             "units": 1, "description": "Text/image moderation — $0.75/1K transactions"},
+        {"name": "Face API",                   "units": 1, "description": "Face detection/verification — $1.00/1K transactions"},
+        {"name": "Free Tier (per service)",    "units": 0, "description": "Most AI services offer a free tier with limited transactions/month"}
+      ]
+    }
+  ]
+}

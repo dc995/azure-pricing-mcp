@@ -21,7 +21,7 @@
     "cloud-costs",
     "cost-estimation"
   ],
-  "author": "Your Name",
+  "author": "dc995",
   "license": "MIT",
   "dependencies": {
     "mcp": ">=1.0.0",
