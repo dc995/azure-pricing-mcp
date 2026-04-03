@@ -4,10 +4,12 @@
 import asyncio
 import json
 import sys
+import pytest
 sys.path.append('.')
 
 from azure_pricing_server import pricing_server, AzurePricingServer
 
+@pytest.mark.asyncio
 async def test_mcp_tool_call():
     """Test the exact MCP tool call that's causing the error."""
     
@@ -55,6 +57,7 @@ async def test_mcp_tool_call():
         import traceback
         traceback.print_exc()
 
+@pytest.mark.asyncio
 async def test_edge_cases():
     """Test edge cases that might cause NoneType errors."""
     

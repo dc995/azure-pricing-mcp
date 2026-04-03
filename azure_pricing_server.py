@@ -41,6 +41,16 @@ class AzurePricingServer:
     """Azure Pricing MCP Server implementation."""
     
     DB_PATH = Path(__file__).resolve().parent / "azure_services.db"
+
+    @staticmethod
+    def _sanitize_odata(value: str) -> str:
+        """Escape single quotes in OData filter values to prevent injection."""
+        return value.replace("'", "''")
+
+    @staticmethod
+    def _escape_like(value: str) -> str:
+        """Escape SQL LIKE wildcards in user input."""
+        return value.replace("%", "\\%").replace("_", "\\_")
     
     def __init__(self):
         self.session: Optional[aiohttp.ClientSession] = None
@@ -227,15 +237,15 @@ class AzurePricingServer:
         filter_conditions = []
         
         if service_name:
-            filter_conditions.append(f"serviceName eq '{service_name}'")
+            filter_conditions.append(f"serviceName eq '{self._sanitize_odata(service_name)}'")
         if service_family:
-            filter_conditions.append(f"serviceFamily eq '{service_family}'")
+            filter_conditions.append(f"serviceFamily eq '{self._sanitize_odata(service_family)}'")
         if region:
-            filter_conditions.append(f"armRegionName eq '{region}'")
+            filter_conditions.append(f"armRegionName eq '{self._sanitize_odata(region)}'")
         if sku_name:
-            filter_conditions.append(f"contains(skuName, '{sku_name}')")
+            filter_conditions.append(f"contains(skuName, '{self._sanitize_odata(sku_name)}')")
         if price_type:
-            filter_conditions.append(f"priceType eq '{price_type}'")
+            filter_conditions.append(f"priceType eq '{self._sanitize_odata(price_type)}'")
         
         # Construct query parameters
         params = {
@@ -613,13 +623,14 @@ class AzurePricingServer:
         """Discover available SKUs for a specific Azure service."""
         
         # Build filter conditions
-        filter_conditions = [f"serviceName eq '{service_name}'"]
+        filter_conditions = [f"serviceName eq '{self._sanitize_odata(service_name)}'"]
         
         if region:
-            filter_conditions.append(f"armRegionName eq '{region}'")
+            filter_conditions.append(f"armRegionName eq '{self._sanitize_odata(region)}'")
         
         if price_type:
-            filter_conditions.append(f"priceType eq '{price_type}'")
+            filter_conditions.append(f"priceType eq '{self._sanitize_odata(price_type)}'")
+
         
         # Construct query parameters
         params = {
@@ -1023,18 +1034,20 @@ class AzurePricingServer:
                         services[r["service_name"]] = r["category"]
                 else:
                     # Fallback: search aliases and service names for the term
+                    escaped = self._escape_like(scenario_lower)
                     rows = conn.execute(
-                        "SELECT DISTINCT service_name, category FROM service_aliases WHERE alias LIKE ? OR service_name LIKE ?",
-                        (f"%{scenario_lower}%", f"%{scenario_lower}%")
+                        "SELECT DISTINCT service_name, category FROM service_aliases WHERE alias LIKE ? ESCAPE '\\' OR service_name LIKE ? ESCAPE '\\'",
+                        (f"%{escaped}%", f"%{escaped}%")
                     ).fetchall()
                     for r in rows:
                         services[r["service_name"]] = r["category"]
             
             elif service_family:
                 # Use azure_services table if populated, otherwise alias categories
+                escaped_family = self._escape_like(service_family.lower())
                 rows = conn.execute(
-                    "SELECT DISTINCT service_name, category FROM service_aliases WHERE LOWER(category) LIKE ?",
-                    (f"%{service_family.lower()}%",)
+                    "SELECT DISTINCT service_name, category FROM service_aliases WHERE LOWER(category) LIKE ? ESCAPE '\\'",
+                    (f"%{escaped_family}%",)
                 ).fetchall()
                 for r in rows:
                     services[r["service_name"]] = r["category"]

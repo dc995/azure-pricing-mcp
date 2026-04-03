@@ -4,7 +4,6 @@
       "type": "stdio",
       "command": "python",
       "args": ["azure_pricing_server.py"],
-      "cwd": "C:\\gitrepo\\azure-pricing-mcp",
       "env": {}
     }
   }

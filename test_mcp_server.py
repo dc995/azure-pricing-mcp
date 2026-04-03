@@ -5,11 +5,13 @@ import asyncio
 import json
 import sys
 import io
+import pytest
 from contextlib import redirect_stdout, redirect_stderr
 
 sys.path.append('.')
 from azure_pricing_server import main
 
+@pytest.mark.asyncio
 async def test_mcp_server():
     """Test the MCP server with simulated input."""
     
