@@ -233,6 +233,11 @@ class AzurePricingServer:
     ) -> Dict[str, Any]:
         """Search Azure retail prices with various filters, SKU validation, and discount support."""
         
+        # Validate discount range
+        discount_error = self._validate_discount(discount_percentage)
+        if discount_error:
+            return {"error": discount_error}
+        
         # Build filter conditions
         filter_conditions = []
         
@@ -366,6 +371,13 @@ class AzurePricingServer:
             }
         }
     
+    @staticmethod
+    def _validate_discount(discount_percentage: Optional[float]) -> Optional[str]:
+        """Validate discount_percentage is in range 0-99. Returns error message or None."""
+        if discount_percentage is not None and (discount_percentage < 0 or discount_percentage >= 100):
+            return f"discount_percentage must be between 0 and 99 (got {discount_percentage}). Use 0 for retail prices."
+        return None
+
     def _apply_discount_to_items(self, items: List[Dict], discount_percentage: float) -> List[Dict]:
         """Apply discount percentage to pricing items."""
         if not items:
@@ -401,19 +413,20 @@ class AzurePricingServer:
         return discounted_items
     
     async def get_customer_discount(self, customer_id: Optional[str] = None) -> Dict[str, Any]:
-        """Get customer discount information. Currently returns 10% default discount for all customers."""
+        """Get customer discount information. Returns 0% by default — discounts are only applied when explicitly requested."""
         
-        # For now, return a default 10% discount for all customers
-        # In the future, this could be enhanced to query a customer database
+        # No discount is applied by default. Users must explicitly pass
+        # discount_percentage to pricing tools to see discounted prices.
+        # In the future, this could query a customer database for negotiated rates.
         
         return {
             "customer_id": customer_id or "default",
-            "discount_percentage": 10.0,
-            "discount_type": "standard",
-            "description": "Standard customer discount",
-            "valid_until": None,  # No expiration for standard discount
-            "applicable_services": "all",  # Applies to all Azure services
-            "note": "This is a default discount applied to all customers. Contact sales for enterprise discounts."
+            "discount_percentage": 0.0,
+            "discount_type": "none",
+            "description": "No discount applied. Pass discount_percentage to pricing tools to see discounted vs retail prices.",
+            "valid_until": None,
+            "applicable_services": "all",
+            "note": "All prices are retail by default. To apply a negotiated discount, pass discount_percentage explicitly to any pricing tool."
         }
     
     async def compare_prices(
@@ -425,6 +438,11 @@ class AzurePricingServer:
         discount_percentage: Optional[float] = None
     ) -> Dict[str, Any]:
         """Compare prices across different regions or SKUs."""
+        
+        # Validate discount range
+        discount_error = self._validate_discount(discount_percentage)
+        if discount_error:
+            return {"error": discount_error}
         
         comparisons = []
         
@@ -516,6 +534,11 @@ class AzurePricingServer:
         discount_percentage: Optional[float] = None
     ) -> Dict[str, Any]:
         """Estimate monthly costs based on usage."""
+        
+        # Validate discount range
+        discount_error = self._validate_discount(discount_percentage)
+        if discount_error:
+            return {"error": discount_error}
         
         # Get pricing information
         result = await self.search_azure_prices(
@@ -1334,7 +1357,7 @@ async def handle_list_tools() -> List[Tool]:
         ),
         Tool(
             name="get_customer_discount",
-            description="Get customer discount information. Returns default 10% discount for all customers.",
+            description="Get customer discount information. All prices are retail by default — discounts are only applied when explicitly requested via discount_percentage.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -1389,14 +1412,6 @@ async def handle_call_tool(name: str, arguments: dict) -> list:
     try:
         async with pricing_server:
             if name == "azure_price_search":
-                # Always get customer discount and apply it
-                customer_discount = await pricing_server.get_customer_discount()
-                discount_percentage = customer_discount["discount_percentage"]
-                
-                # Add discount to arguments if not already specified
-                if "discount_percentage" not in arguments:
-                    arguments["discount_percentage"] = discount_percentage
-                
                 result = await pricing_server.search_azure_prices(**arguments)
                 
                 # Auto-summarize by SKU when no sku_name filter and many results
