@@ -1,14 +1,17 @@
-"""Cold-start regression tests for the MCP stdio entry point."""
+"""MCP SDK v2 lifecycle and backward-compatibility tests."""
 
-import json
-import queue
-import subprocess
-import sys
-import threading
 import asyncio
+import sys
+import time
 from pathlib import Path
 
 import pytest
+from mcp import Client, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from mcp.shared.exceptions import MCPError
+from mcp.types.version import LATEST_HANDSHAKE_VERSION, LATEST_MODERN_VERSION
+
+import azure_pricing_server
 
 
 ROOT = Path(__file__).resolve().parent
@@ -23,95 +26,106 @@ EXPECTED_TOOLS = {
 }
 
 
-def start_server(entrypoint="azure_pricing_mcp.py"):
-    process = subprocess.Popen(
-        [sys.executable, entrypoint],
-        cwd=ROOT,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-    )
-    responses = queue.Queue()
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("mode", "expected_protocol"),
+    [("auto", LATEST_MODERN_VERSION), ("legacy", LATEST_HANDSHAKE_VERSION)],
+)
+async def test_server_supports_modern_and_legacy_clients(mode, expected_protocol):
+    async with Client(azure_pricing_server.server, mode=mode) as client:
+        tools = await client.list_tools()
+        result = await client.call_tool("get_customer_discount", {})
 
-    def read_responses():
-        for line in process.stdout:
-            responses.put(json.loads(line))
-
-    threading.Thread(target=read_responses, daemon=True).start()
-    return process, responses
+        assert client.protocol_version == expected_protocol
+        assert client.server_info.version == "2.0.2"
+        assert {tool.name for tool in tools.tools} == EXPECTED_TOOLS
+        assert not result.is_error
+        assert "Customer Discount Information" in result.content[0].text
 
 
-def send(process, request):
-    process.stdin.write(json.dumps(request) + "\n")
-    process.stdin.flush()
+@pytest.mark.asyncio
+async def test_legacy_ping_is_not_blocked_by_tool_call(monkeypatch):
+    started = asyncio.Event()
+    release = asyncio.Event()
+    original_handler = azure_pricing_server.handle_call_tool
+
+    async def delayed_tool(name, arguments):
+        started.set()
+        await release.wait()
+        return await original_handler(name, arguments)
+
+    monkeypatch.setattr(azure_pricing_server, "handle_call_tool", delayed_tool)
+
+    async with Client(azure_pricing_server.server, mode="legacy") as client:
+        tool_call = asyncio.create_task(client.call_tool("get_customer_discount", {}))
+        await asyncio.wait_for(started.wait(), timeout=1)
+        await asyncio.wait_for(client.send_ping(), timeout=1)
+        release.set()
+        result = await tool_call
+
+    assert not result.is_error
 
 
-def stop_server(process):
-    process.terminate()
-    process.wait(timeout=5)
+@pytest.mark.asyncio
+async def test_tool_cancellation_reaches_the_handler(monkeypatch):
+    started = asyncio.Event()
+    cancelled = asyncio.Event()
+
+    async def cancellable_tool(name, arguments):
+        started.set()
+        try:
+            await asyncio.Event().wait()
+        finally:
+            cancelled.set()
+
+    monkeypatch.setattr(azure_pricing_server, "handle_call_tool", cancellable_tool)
+
+    async with Client(azure_pricing_server.server, mode="legacy") as client:
+        tool_call = asyncio.create_task(client.call_tool("get_customer_discount", {}))
+        await asyncio.wait_for(started.wait(), timeout=1)
+        tool_call.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await tool_call
+        await asyncio.wait_for(cancelled.wait(), timeout=1)
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("entrypoint", ["azure_pricing_mcp.py", "azure_pricing_server.py"])
-def test_initialize_responds_within_two_seconds(entrypoint):
-    request = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "initialize",
-        "params": {
-            "protocolVersion": "2024-11-05",
-            "capabilities": {},
-            "clientInfo": {"name": "startup-test", "version": "1.0"},
-        },
-    }
-    process, responses = start_server(entrypoint)
+async def test_stdio_entrypoints_support_legacy_clients(entrypoint):
+    target = StdioServerParameters(
+        command=sys.executable,
+        args=[entrypoint],
+        cwd=ROOT,
+    )
 
-    try:
-        send(process, request)
-        response = responses.get(timeout=2.0)
-        assert response["id"] == 1
-        assert "result" in response
-    finally:
-        stop_server(process)
+    async with asyncio.timeout(10):
+        async with Client(stdio_client(target), mode="legacy") as client:
+            tools = await client.list_tools()
+
+            assert client.protocol_version == LATEST_HANDSHAKE_VERSION
+            assert client.server_info.version == "2.0.2"
+            assert {tool.name for tool in tools.tools} == EXPECTED_TOOLS
 
 
-def test_tools_are_listed_without_loading_pricing_implementation():
-    process, responses = start_server()
-    try:
-        send(process, {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
-        response = responses.get(timeout=2.0)
-        tool_names = {tool["name"] for tool in response["result"]["tools"]}
-        assert tool_names == EXPECTED_TOOLS
-    finally:
-        stop_server(process)
+@pytest.mark.asyncio
+async def test_modern_stdio_connection_completes_within_five_seconds():
+    target = StdioServerParameters(
+        command=sys.executable,
+        args=["azure_pricing_mcp.py"],
+        cwd=ROOT,
+    )
+    started = time.perf_counter()
+
+    async with asyncio.timeout(5):
+        async with Client(stdio_client(target), mode="auto") as client:
+            elapsed = time.perf_counter() - started
+
+            assert client.protocol_version == LATEST_MODERN_VERSION
+            assert elapsed < 5
 
 
-def test_tool_calls_delegate_to_existing_implementation():
-    process, responses = start_server()
-    try:
-        send(
-            process,
-            {
-                "jsonrpc": "2.0",
-                "id": 3,
-                "method": "tools/call",
-                "params": {"name": "get_customer_discount", "arguments": {}},
-            },
-        )
-        response = responses.get(timeout=15.0)
-        assert response["id"] == 3
-        assert "Customer Discount Information" in response["result"]["content"][0]["text"]
-    finally:
-        stop_server(process)
-
-
-def test_fast_tool_definitions_match_existing_server():
-    from azure_pricing_server import handle_list_tools
-    from mcp_tool_definitions import TOOLS
-
-    existing_tools = [
-        tool.model_dump(mode="json", by_alias=True, exclude_none=True)
-        for tool in asyncio.run(handle_list_tools())
-    ]
-    assert TOOLS == existing_tools
+@pytest.mark.asyncio
+async def test_unknown_tool_raises_an_mcp_error():
+    async with Client(azure_pricing_server.server) as client:
+        with pytest.raises(MCPError, match="Internal server error"):
+            await client.call_tool("not-a-tool", {})

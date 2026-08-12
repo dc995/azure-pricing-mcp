@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - An MCP-compatible client (GitHub Copilot CLI, Claude Desktop, VS Code/Cursor, etc.)
 
 ## Setup (3 steps)
