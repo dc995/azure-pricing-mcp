@@ -77,7 +77,7 @@ The Azure Pricing MCP Server is a **Model Context Protocol (MCP)** server that g
 ```
 
 - **Transport**: stdio (standard MCP transport)
-- **Runtime**: Python 3.8+ with asyncio
+- **Runtime**: Python 3.10+ with asyncio
 - **HTTP Client**: aiohttp (async, non-blocking)
 - **Schema Validation**: Pydantic v2
 

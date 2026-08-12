@@ -2,6 +2,20 @@
 
 All notable changes to the Azure Pricing MCP Server are documented here.
 
+## [2.0.2] - 2026-08-12
+
+### Changed
+
+- **MCP Python SDK v2** — upgraded the server to `mcp==2.0.0` and migrated tool registration to the official v2 low-level `Server` callback API.
+- **Dual-era protocol support** — the same stdio server now serves modern `2026-07-28` clients through `server/discover` and every supported handshake-era client through `initialize`, with negotiation handled by the SDK.
+- **Lifecycle tests** — modern and legacy clients now exercise tool listing, calls, stdio launch paths, reported server version, error behavior, and concurrent legacy ping handling.
+
+### Fixed
+
+- Long-running pricing calls no longer block unrelated legacy protocol requests such as ping or cancellation.
+- Protocol negotiation no longer accepts arbitrary unsupported version strings.
+- Server discovery now reports the correct release version (`2.0.2`).
+
 ## [2.0.1] - 2026-08-12
 
 ### Added

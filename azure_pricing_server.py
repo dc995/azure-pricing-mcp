@@ -5,12 +5,6 @@ Azure Pricing MCP Server
 A Model Context Protocol server that provides tools for querying Azure retail pricing.
 """
 
-if __name__ == "__main__":
-    from azure_pricing_mcp import main as fast_main
-
-    fast_main()
-    raise SystemExit
-
 import asyncio
 import json
 import logging
@@ -20,15 +14,13 @@ from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlencode, quote
 
 import aiohttp
-from mcp.server import Server
-from mcp.server.models import InitializationOptions
-from mcp.server.session import ServerSession
+from mcp.server import Server, ServerRequestContext
 from mcp.server.stdio import stdio_server
 from mcp.types import (
-    CallToolRequest,
     CallToolResult,
-    ListToolsRequest,
     ListToolsResult,
+    CallToolRequestParams,
+    PaginatedRequestParams,
     Tool,
     TextContent,
 )
@@ -1179,13 +1171,9 @@ class AzurePricingServer:
         finally:
             conn.close()
 
-# Create the MCP server
-server = Server("azure-pricing")
-
 # Global server instance
 pricing_server = AzurePricingServer()
 
-@server.list_tools()
 async def handle_list_tools() -> List[Tool]:
     """List available tools."""
     return [
@@ -1411,7 +1399,6 @@ async def handle_list_tools() -> List[Tool]:
         )
     ]
 
-@server.call_tool()
 async def handle_call_tool(name: str, arguments: dict) -> list:
     """Handle tool calls."""
     
@@ -1874,6 +1861,32 @@ Applicable Services: {result['applicable_services']}
                 text=f"Error: {str(e)}"
             )
         ]
+
+async def list_tools_v2(
+    context: ServerRequestContext,
+    params: PaginatedRequestParams | None,
+) -> ListToolsResult:
+    """Adapt the existing tool catalog to the MCP SDK v2 callback contract."""
+    return ListToolsResult(tools=await handle_list_tools())
+
+
+async def call_tool_v2(
+    context: ServerRequestContext,
+    params: CallToolRequestParams,
+) -> CallToolResult:
+    """Adapt existing tool execution to the MCP SDK v2 callback contract."""
+    if params.name not in {tool.name for tool in await handle_list_tools()}:
+        raise ValueError(f"Unknown tool: {params.name}")
+    content = await handle_call_tool(params.name, params.arguments or {})
+    return CallToolResult(content=content)
+
+
+server = Server(
+    "azure-pricing",
+    version="2.0.2",
+    on_list_tools=list_tools_v2,
+    on_call_tool=call_tool_v2,
+)
 
 async def main():
     """Main entry point for the server."""
