@@ -3,7 +3,7 @@
     "azure-pricing": {
       "type": "stdio",
       "command": "python",
-      "args": ["azure_pricing_server.py"],
+      "args": ["azure_pricing_mcp.py"],
       "env": {}
     }
   }
