@@ -5,6 +5,12 @@ Azure Pricing MCP Server
 A Model Context Protocol server that provides tools for querying Azure retail pricing.
 """
 
+if __name__ == "__main__":
+    from azure_pricing_mcp import main as fast_main
+
+    fast_main()
+    raise SystemExit
+
 import asyncio
 import json
 import logging
@@ -1226,7 +1232,7 @@ async def handle_list_tools() -> List[Tool]:
                     "validate_sku": {
                         "type": "boolean",
                         "description": "Whether to validate SKU names and provide suggestions (default: true)",
-                        "default": true
+                        "default": True
                     }
                 }
             }
@@ -1393,7 +1399,7 @@ async def handle_list_tools() -> List[Tool]:
                     "include_pricing": {
                         "type": "boolean",
                         "description": "Include sample pricing for each service (default: true, set false for faster results)",
-                        "default": true
+                        "default": True
                     },
                     "limit": {
                         "type": "integer",

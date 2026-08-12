@@ -2,6 +2,22 @@
 
 All notable changes to the Azure Pricing MCP Server are documented here.
 
+## [2.0.1] - 2026-08-12
+
+### Added
+
+- **Fast MCP entry point** (`azure_pricing_mcp.py`) — responds to initialization and tool discovery without loading the Python MCP SDK, then lazy-loads the existing pricing implementation on the first tool call.
+- **Startup regression tests** — enforce a two-second initialization deadline for both the new and legacy launch commands and verify exact tool-contract parity.
+
+### Changed
+
+- MCP client examples now launch `azure_pricing_mcp.py`. Direct execution of `azure_pricing_server.py` remains backward-compatible and routes through the same fast path.
+
+### Fixed
+
+- Cold startup no longer stalls VS Code's MCP initialization prompt; measured initialization dropped from approximately 29 seconds to under 0.5 seconds.
+- Corrected two invalid lowercase JSON booleans in the Python tool schemas that caused tool discovery to fail after initialization.
+
 ## [2.0.0] - 2026-03-20
 
 ### Fork by [dc995](https://github.com/dc995)
