@@ -98,13 +98,15 @@ async def test_stdio_entrypoints_support_legacy_clients(entrypoint):
         cwd=ROOT,
     )
 
-    async with asyncio.timeout(10):
+    async def connect():
         async with Client(stdio_client(target), mode="legacy") as client:
             tools = await client.list_tools()
 
             assert client.protocol_version == LATEST_HANDSHAKE_VERSION
             assert client.server_info.version == "2.0.2"
             assert {tool.name for tool in tools.tools} == EXPECTED_TOOLS
+
+    await asyncio.wait_for(connect(), timeout=10)
 
 
 @pytest.mark.asyncio
@@ -116,12 +118,14 @@ async def test_modern_stdio_connection_completes_within_five_seconds():
     )
     started = time.perf_counter()
 
-    async with asyncio.timeout(5):
+    async def connect():
         async with Client(stdio_client(target), mode="auto") as client:
             elapsed = time.perf_counter() - started
 
             assert client.protocol_version == LATEST_MODERN_VERSION
             assert elapsed < 5
+
+    await asyncio.wait_for(connect(), timeout=5)
 
 
 @pytest.mark.asyncio
